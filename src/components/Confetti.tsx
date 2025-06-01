@@ -2,13 +2,14 @@
 import React from 'react';
 
 export const Confetti: React.FC = () => {
-  // Generate 60 confetti pieces with random properties
-  const confettiPieces = Array.from({ length: 60 }, (_, i) => ({
+  // Generate 150 confetti pieces with random properties for more visual impact
+  const confettiPieces = Array.from({ length: 150 }, (_, i) => ({
     id: i,
     left: Math.random() * 100,
-    animationDelay: Math.random() * 3,
-    animationDuration: 3 + Math.random() * 2,
-    backgroundColor: `hsl(${Math.random() * 360}, 70%, 60%)`
+    animationDelay: Math.random() * 2,
+    animationDuration: 4 + Math.random() * 3, // 4-7 seconds duration
+    backgroundColor: `hsl(${Math.random() * 360}, 70%, 60%)`,
+    size: 2 + Math.random() * 2 // Varying sizes from 2-4px
   }));
 
   return (
@@ -20,7 +21,7 @@ export const Confetti: React.FC = () => {
             opacity: 1;
           }
           100% {
-            transform: translateY(100vh) rotate(360deg);
+            transform: translateY(100vh) rotate(720deg);
             opacity: 0;
           }
         }
@@ -30,10 +31,12 @@ export const Confetti: React.FC = () => {
         {confettiPieces.map((piece) => (
           <div
             key={piece.id}
-            className="absolute w-2 h-2 opacity-90"
+            className="absolute opacity-90"
             style={{
               left: `${piece.left}%`,
               top: '-10px',
+              width: `${piece.size}px`,
+              height: `${piece.size}px`,
               backgroundColor: piece.backgroundColor,
               animationDelay: `${piece.animationDelay}s`,
               animationDuration: `${piece.animationDuration}s`,

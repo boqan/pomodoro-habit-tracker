@@ -16,7 +16,7 @@ export const useTimer = (focusDuration: number, breakDuration: number) => {
 
   const pauseTimer = useCallback(() => {
     setIsRunning(false);
-    // Don't reset the timer, just pause it
+    // Just pause, don't reset anything
   }, []);
 
   const stopTimer = useCallback(() => {
@@ -70,7 +70,7 @@ export const useTimer = (focusDuration: number, breakDuration: number) => {
     };
   }, [isRunning, timeLeft]);
 
-  // Update timer when focus/break duration changes
+  // Update timer when focus/break duration changes (only if not running)
   useEffect(() => {
     if (!isRunning) {
       const newDuration = isBreak ? breakDuration : focusDuration;

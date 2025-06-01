@@ -105,15 +105,18 @@ const SmartPomodoro = () => {
     setShowShield(false);
     setShowSessionComplete(true);
     
-    // Calculate new level before and after XP addition
-    const currentLevel = Math.floor(meta.xp / 100);
-    addXP(10);
-    const newLevel = Math.floor((meta.xp + 10) / 100);
-    
-    // Show confetti if level increased
-    if (newLevel > currentLevel) {
-      setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 3000);
+    // Only award XP if the session was at least 1 minute long
+    if (focusLength >= 1) {
+      // Calculate new level before and after XP addition
+      const currentLevel = Math.floor(meta.xp / 100);
+      addXP(10);
+      const newLevel = Math.floor((meta.xp + 10) / 100);
+      
+      // Show confetti if level increased - longer duration
+      if (newLevel > currentLevel) {
+        setShowConfetti(true);
+        setTimeout(() => setShowConfetti(false), 7000); // 7 seconds instead of 3
+      }
     }
   };
 
@@ -127,6 +130,17 @@ const SmartPomodoro = () => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Validation functions for timer inputs
+  const handleFocusLengthChange = (value: number) => {
+    const validValue = Math.max(1, Math.min(60, value)); // Min 1, Max 60
+    setFocusLength(validValue);
+  };
+
+  const handleBreakLengthChange = (value: number) => {
+    const validValue = Math.max(1, Math.min(30, value)); // Min 1, Max 30
+    setBreakLength(validValue);
   };
 
   return (
@@ -186,7 +200,7 @@ const SmartPomodoro = () => {
                       id="focus-length"
                       type="number"
                       value={focusLength}
-                      onChange={(e) => setFocusLength(Number(e.target.value))}
+                      onChange={(e) => handleFocusLengthChange(Number(e.target.value))}
                       className="w-20"
                       min="1"
                       max="60"
@@ -199,7 +213,7 @@ const SmartPomodoro = () => {
                       id="break-length"
                       type="number"
                       value={breakLength}
-                      onChange={(e) => setBreakLength(Number(e.target.value))}
+                      onChange={(e) => handleBreakLengthChange(Number(e.target.value))}
                       className="w-20"
                       min="1"
                       max="30"
