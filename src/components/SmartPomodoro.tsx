@@ -5,7 +5,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,6 +18,7 @@ import { HabitTracker } from './HabitTracker';
 import { SessionCompleteModal } from './SessionCompleteModal';
 import { DistractionShield } from './DistractionShield';
 import { Confetti } from './Confetti';
+import { QuickStartDialog } from './QuickStartDialog';
 
 const SmartPomodoro = () => {
   const [focusLength, setFocusLength] = useState(25);
@@ -58,8 +58,31 @@ const SmartPomodoro = () => {
   const level = Math.floor(meta.xp / 100);
   const xpProgress = meta.xp % 100;
 
+  // Apply dark mode to document
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [darkMode]);
+
   const handleStart = () => {
     setShowIntentDialog(true);
+  };
+
+  const handleQuickStart = (task: string) => {
+    setIntent(task);
+    startTimer();
+    if (shieldEnabled) {
+      setShowShield(true);
+    }
+    addSession({
+      start: new Date(),
+      length: focusLength * 60,
+      intent: task,
+      isBreak: false
+    });
   };
 
   const handleIntentSubmit = () => {
@@ -101,19 +124,8 @@ const SmartPomodoro = () => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const quickStartTasks = [
-    "Read one article or chapter",
-    "Clear email inbox",
-    "Write for 25 minutes",
-    "Plan tomorrow's tasks",
-    "Organize workspace",
-    "Review project notes",
-    "Research topic for 25 minutes",
-    "Practice a skill"
-  ];
-
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'dark bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-indigo-100'}`}>
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       {showConfetti && <Confetti />}
       {showShield && <DistractionShield timeLeft={timeLeft} onEscape={() => setShowShield(false)} />}
       
@@ -122,8 +134,8 @@ const SmartPomodoro = () => {
         <header className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <Target className="h-8 w-8 text-blue-600" />
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Smart Pomodoro 2.0</h1>
+              <Target className="h-8 w-8 text-primary" />
+              <h1 className="text-3xl font-bold text-foreground">Smart Pomodoro 2.0</h1>
             </div>
             <Badge variant="secondary" className="flex items-center space-x-1">
               <Trophy className="h-4 w-4" />
@@ -137,7 +149,7 @@ const SmartPomodoro = () => {
               <div className="w-32">
                 <Progress value={xpProgress} className="h-2" />
               </div>
-              <span className="text-sm text-gray-600 dark:text-gray-300">{meta.xp} XP</span>
+              <span className="text-sm text-muted-foreground">{meta.xp} XP</span>
             </div>
             
             <Button
@@ -155,12 +167,12 @@ const SmartPomodoro = () => {
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Timer Card */}
-          <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+          <Card className="p-6">
             <div className="text-center space-y-6">
               <div className="space-y-4">
                 <div className="flex justify-center space-x-4">
                   <div className="flex items-center space-x-2">
-                    <Label htmlFor="focus-length">Focus</Label>
+                    <Label htmlFor="focus-length" className="text-foreground">Focus</Label>
                     <Input
                       id="focus-length"
                       type="number"
@@ -170,10 +182,10 @@ const SmartPomodoro = () => {
                       min="1"
                       max="60"
                     />
-                    <span className="text-sm text-gray-500">min</span>
+                    <span className="text-sm text-muted-foreground">min</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Label htmlFor="break-length">Break</Label>
+                    <Label htmlFor="break-length" className="text-foreground">Break</Label>
                     <Input
                       id="break-length"
                       type="number"
@@ -183,7 +195,7 @@ const SmartPomodoro = () => {
                       min="1"
                       max="30"
                     />
-                    <span className="text-sm text-gray-500">min</span>
+                    <span className="text-sm text-muted-foreground">min</span>
                   </div>
                 </div>
 
@@ -193,11 +205,17 @@ const SmartPomodoro = () => {
                     checked={shieldEnabled}
                     onCheckedChange={setShieldEnabled}
                   />
-                  <Label htmlFor="shield" className="flex items-center space-x-2">
+                  <Label htmlFor="shield" className="flex items-center space-x-2 text-foreground">
                     <Shield className="h-4 w-4" />
                     <span>Distraction Shield</span>
                   </Label>
                 </div>
+                
+                {shieldEnabled && (
+                  <p className="text-xs text-muted-foreground">
+                    Shield will overlay the screen during focus sessions (works best in full browser)
+                  </p>
+                )}
               </div>
 
               {/* Circular Timer */}
@@ -210,7 +228,7 @@ const SmartPomodoro = () => {
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="2"
-                    className="text-gray-200 dark:text-gray-700"
+                    className="text-muted"
                   />
                   <circle
                     cx="50"
@@ -222,15 +240,15 @@ const SmartPomodoro = () => {
                     strokeLinecap="round"
                     strokeDasharray={`${2 * Math.PI * 45}`}
                     strokeDashoffset={`${2 * Math.PI * 45 * (1 - progress)}`}
-                    className={`transition-all duration-1000 ${isBreak ? 'text-green-500' : 'text-blue-500'}`}
+                    className={`transition-all duration-1000 ${isBreak ? 'text-green-500' : 'text-primary'}`}
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center">
-                    <div className="text-4xl font-mono font-bold text-gray-900 dark:text-white">
+                    <div className="text-4xl font-mono font-bold text-foreground">
                       {formatTime(timeLeft)}
                     </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                    <div className="text-sm text-muted-foreground">
                       {isBreak ? 'Break Time' : 'Focus Time'}
                     </div>
                   </div>
@@ -240,7 +258,7 @@ const SmartPomodoro = () => {
               {/* Timer Controls */}
               <div className="flex justify-center space-x-4">
                 {!isRunning ? (
-                  <Button onClick={handleStart} size="lg" className="bg-blue-600 hover:bg-blue-700">
+                  <Button onClick={handleStart} size="lg" className="bg-primary hover:bg-primary/90">
                     <Play className="h-5 w-5 mr-2" />
                     Start Focus
                   </Button>
@@ -257,39 +275,13 @@ const SmartPomodoro = () => {
                   </>
                 )}
                 
-                <Drawer>
-                  <DrawerTrigger asChild>
-                    <Button variant="outline" size="lg">
-                      Quick Start
-                    </Button>
-                  </DrawerTrigger>
-                  <DrawerContent>
-                    <DrawerHeader>
-                      <DrawerTitle>2-Minute Rule Quick Start</DrawerTitle>
-                    </DrawerHeader>
-                    <div className="p-4 space-y-2">
-                      {quickStartTasks.map((task, index) => (
-                        <Button
-                          key={index}
-                          variant="ghost"
-                          className="w-full justify-start"
-                          onClick={() => {
-                            setIntent(task);
-                            handleIntentSubmit();
-                          }}
-                        >
-                          {task}
-                        </Button>
-                      ))}
-                    </div>
-                  </DrawerContent>
-                </Drawer>
+                <QuickStartDialog onSelectTask={handleQuickStart} />
               </div>
             </div>
           </Card>
 
           {/* Tasks and Habits */}
-          <Card className="p-6 bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+          <Card className="p-6">
             <Tabs defaultValue="tasks" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="tasks">Tasks</TabsTrigger>
@@ -324,7 +316,7 @@ const SmartPomodoro = () => {
             <DialogTitle>Set Your Focus Intent</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <Label htmlFor="intent">In this session I will...</Label>
+            <Label htmlFor="intent" className="text-foreground">In this session I will...</Label>
             <Textarea
               id="intent"
               value={intent}
