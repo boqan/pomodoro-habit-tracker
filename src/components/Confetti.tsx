@@ -12,24 +12,8 @@ export const Confetti: React.FC = () => {
   }));
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
-      {confettiPieces.map((piece) => (
-        <div
-          key={piece.id}
-          className="absolute w-2 h-2 opacity-90 animate-bounce"
-          style={{
-            left: `${piece.left}%`,
-            top: '-10px',
-            backgroundColor: piece.backgroundColor,
-            animationDelay: `${piece.animationDelay}s`,
-            animationDuration: `${piece.animationDuration}s`,
-            transform: 'rotate(45deg)',
-            animation: `confetti-fall ${piece.animationDuration}s ease-in-out ${piece.animationDelay}s forwards`
-          }}
-        />
-      ))}
-      
-      <style jsx>{`
+    <>
+      <style>{`
         @keyframes confetti-fall {
           0% {
             transform: translateY(-100vh) rotate(0deg);
@@ -41,6 +25,24 @@ export const Confetti: React.FC = () => {
           }
         }
       `}</style>
-    </div>
+      
+      <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+        {confettiPieces.map((piece) => (
+          <div
+            key={piece.id}
+            className="absolute w-2 h-2 opacity-90"
+            style={{
+              left: `${piece.left}%`,
+              top: '-10px',
+              backgroundColor: piece.backgroundColor,
+              animationDelay: `${piece.animationDelay}s`,
+              animationDuration: `${piece.animationDuration}s`,
+              transform: 'rotate(45deg)',
+              animation: `confetti-fall ${piece.animationDuration}s ease-in-out ${piece.animationDelay}s forwards`
+            }}
+          />
+        ))}
+      </div>
+    </>
   );
 };
