@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -19,6 +18,9 @@ import { SessionCompleteModal } from './SessionCompleteModal';
 import { DistractionShield } from './DistractionShield';
 import { Confetti } from './Confetti';
 import { QuickStartDialog } from './QuickStartDialog';
+import { XPTooltip } from './XPTooltip';
+import { DistractionLog } from './DistractionLog';
+import { Footer } from './Footer';
 
 const SmartPomodoro = () => {
   const [focusLength, setFocusLength] = useState(25);
@@ -102,11 +104,14 @@ const SmartPomodoro = () => {
   const handleSessionComplete = () => {
     setShowShield(false);
     setShowSessionComplete(true);
-    addXP(10);
     
-    // Check for level up
+    // Calculate new level before and after XP addition
+    const currentLevel = Math.floor(meta.xp / 100);
+    addXP(10);
     const newLevel = Math.floor((meta.xp + 10) / 100);
-    if (newLevel > level) {
+    
+    // Show confetti if level increased
+    if (newLevel > currentLevel) {
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 3000);
     }
@@ -150,6 +155,7 @@ const SmartPomodoro = () => {
                 <Progress value={xpProgress} className="h-2" />
               </div>
               <span className="text-sm text-muted-foreground">{meta.xp} XP</span>
+              <XPTooltip />
             </div>
             
             <Button
@@ -164,8 +170,11 @@ const SmartPomodoro = () => {
           </div>
         </header>
 
+        {/* Distraction Log - only show when timer is running */}
+        <DistractionLog visible={isRunning && !isBreak} />
+
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
           {/* Timer Card */}
           <Card className="p-6">
             <div className="text-center space-y-6">
@@ -308,6 +317,9 @@ const SmartPomodoro = () => {
           </Card>
         </div>
       </div>
+
+      {/* Footer */}
+      <Footer />
 
       {/* Intent Dialog */}
       <Dialog open={showIntentDialog} onOpenChange={setShowIntentDialog}>

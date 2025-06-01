@@ -16,6 +16,7 @@ export const useTimer = (focusDuration: number, breakDuration: number) => {
 
   const pauseTimer = useCallback(() => {
     setIsRunning(false);
+    // Don't reset the timer, just pause it
   }, []);
 
   const stopTimer = useCallback(() => {
