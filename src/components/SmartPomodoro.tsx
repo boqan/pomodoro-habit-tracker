@@ -1,15 +1,14 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Settings, Play, Pause, Square, Shield, Target, Trophy, Zap } from 'lucide-react';
+import { Settings, Target, Trophy, Zap } from 'lucide-react';
 import { useDatabase } from '../hooks/useDatabase';
 import { useTimer } from '../hooks/useTimer';
 import { TaskManager } from './TaskManager';
@@ -17,10 +16,10 @@ import { HabitTracker } from './HabitTracker';
 import { SessionCompleteModal } from './SessionCompleteModal';
 import { DistractionShield } from './DistractionShield';
 import { Confetti } from './Confetti';
-import { QuickStartDialog } from './QuickStartDialog';
 import { XPTooltip } from './XPTooltip';
 import { DistractionLog } from './DistractionLog';
 import { Footer } from './Footer';
+import { TimerSection } from './TimerSection';
 
 const SmartPomodoro = () => {
   const [focusLength, setFocusLength] = useState(25);
@@ -126,12 +125,6 @@ const SmartPomodoro = () => {
     }
   }, [isRunning, timeLeft, isBreak]);
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
   // Validation functions for timer inputs
   const handleFocusLengthChange = (value: number) => {
     const validValue = Math.max(1, Math.min(60, value)); // Min 1, Max 60
@@ -190,118 +183,22 @@ const SmartPomodoro = () => {
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
           {/* Timer Card */}
-          <Card className="p-6">
-            <div className="text-center space-y-6">
-              <div className="space-y-4">
-                <div className="flex justify-center space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <Label htmlFor="focus-length" className="text-foreground">Focus</Label>
-                    <Input
-                      id="focus-length"
-                      type="number"
-                      value={focusLength}
-                      onChange={(e) => handleFocusLengthChange(Number(e.target.value))}
-                      className="w-20"
-                      min="1"
-                      max="60"
-                    />
-                    <span className="text-sm text-muted-foreground">min</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Label htmlFor="break-length" className="text-foreground">Break</Label>
-                    <Input
-                      id="break-length"
-                      type="number"
-                      value={breakLength}
-                      onChange={(e) => handleBreakLengthChange(Number(e.target.value))}
-                      className="w-20"
-                      min="1"
-                      max="30"
-                    />
-                    <span className="text-sm text-muted-foreground">min</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-center space-x-2">
-                  <Switch
-                    id="shield"
-                    checked={shieldEnabled}
-                    onCheckedChange={setShieldEnabled}
-                  />
-                  <Label htmlFor="shield" className="flex items-center space-x-2 text-foreground">
-                    <Shield className="h-4 w-4" />
-                    <span>Distraction Shield</span>
-                  </Label>
-                </div>
-                
-                {shieldEnabled && (
-                  <p className="text-xs text-muted-foreground">
-                    Shield will overlay the screen during focus sessions (works best in full browser)
-                  </p>
-                )}
-              </div>
-
-              {/* Circular Timer */}
-              <div className="relative w-64 h-64 mx-auto">
-                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="45"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    className="text-muted"
-                  />
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="45"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    strokeLinecap="round"
-                    strokeDasharray={`${2 * Math.PI * 45}`}
-                    strokeDashoffset={`${2 * Math.PI * 45 * (1 - progress)}`}
-                    className={`transition-all duration-1000 ${isBreak ? 'text-green-500' : 'text-primary'}`}
-                  />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-4xl font-mono font-bold text-foreground">
-                      {formatTime(timeLeft)}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {isBreak ? 'Break Time' : 'Focus Time'}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Timer Controls */}
-              <div className="flex justify-center space-x-4">
-                {!isRunning ? (
-                  <Button onClick={handleStart} size="lg" className="bg-primary hover:bg-primary/90">
-                    <Play className="h-5 w-5 mr-2" />
-                    Start Focus
-                  </Button>
-                ) : (
-                  <>
-                    <Button onClick={pauseTimer} variant="outline" size="lg">
-                      <Pause className="h-5 w-5 mr-2" />
-                      Pause
-                    </Button>
-                    <Button onClick={stopTimer} variant="destructive" size="lg">
-                      <Square className="h-5 w-5 mr-2" />
-                      Stop
-                    </Button>
-                  </>
-                )}
-                
-                <QuickStartDialog onSelectTask={handleQuickStart} />
-              </div>
-            </div>
-          </Card>
+          <TimerSection
+            timeLeft={timeLeft}
+            progress={progress}
+            isRunning={isRunning}
+            isBreak={isBreak}
+            focusLength={focusLength}
+            breakLength={breakLength}
+            shieldEnabled={shieldEnabled}
+            onStart={handleStart}
+            onPause={pauseTimer}
+            onStop={stopTimer}
+            onQuickStart={handleQuickStart}
+            onFocusLengthChange={handleFocusLengthChange}
+            onBreakLengthChange={handleBreakLengthChange}
+            onShieldToggle={setShieldEnabled}
+          />
 
           {/* Tasks and Habits */}
           <Card className="p-6">
