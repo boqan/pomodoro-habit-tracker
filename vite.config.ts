@@ -4,7 +4,7 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig({
   server: {
     host: "::",
     port: 8080,
@@ -12,9 +12,7 @@ export default defineConfig(({ mode }) => ({
       clientPort: 8080
     }
   },
-  plugins: [
-    react(),
-  ],
+  plugins: [react()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -23,4 +21,4 @@ export default defineConfig(({ mode }) => ({
   define: {
     __WS_TOKEN__: JSON.stringify(process.env.WS_TOKEN || ''),
   }
-}));
+});
