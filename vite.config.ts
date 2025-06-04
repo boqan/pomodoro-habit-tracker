@@ -14,9 +14,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    // componentTagger is only available in Lovable environment
-    // mode === 'development' && componentTagger(),
-  ].filter(Boolean),
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
