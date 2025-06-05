@@ -31,6 +31,7 @@ const SmartPomodoro = () => {
   const [showSessionComplete, setShowSessionComplete] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [sessionStarted, setSessionStarted] = useState(false);
 
   const { 
     timeLeft, 
@@ -41,6 +42,8 @@ const SmartPomodoro = () => {
     stopTimer,
     progress 
   } = useTimer(focusLength * 60, breakLength * 60);
+
+  const isPaused = sessionStarted && !isRunning && timeLeft > 0;
 
   const {
     tasks,
@@ -72,9 +75,17 @@ const SmartPomodoro = () => {
     setShowIntentDialog(true);
   };
 
+  const handleResume = () => {
+    startTimer();
+    if (shieldEnabled) {
+      setShowShield(true);
+    }
+  };
+
   const handleQuickStart = (task: string) => {
     setIntent(task);
     startTimer();
+    setSessionStarted(true);
     if (shieldEnabled) {
       setShowShield(true);
     }
@@ -89,6 +100,7 @@ const SmartPomodoro = () => {
   const handleIntentSubmit = () => {
     setShowIntentDialog(false);
     startTimer();
+    setSessionStarted(true);
     if (shieldEnabled) {
       setShowShield(true);
     }
@@ -100,9 +112,16 @@ const SmartPomodoro = () => {
     });
   };
 
+  const handleStop = () => {
+    stopTimer();
+    setShowShield(false);
+    setSessionStarted(false);
+  };
+
   const handleSessionComplete = () => {
     setShowShield(false);
     setShowSessionComplete(true);
+    setSessionStarted(false);
     
     // Only award XP if the session was at least 1 minute long
     if (focusLength >= 1) {
@@ -187,13 +206,15 @@ const SmartPomodoro = () => {
             timeLeft={timeLeft}
             progress={progress}
             isRunning={isRunning}
+            isPaused={isPaused}
             isBreak={isBreak}
             focusLength={focusLength}
             breakLength={breakLength}
             shieldEnabled={shieldEnabled}
             onStart={handleStart}
+            onResume={handleResume}
             onPause={pauseTimer}
-            onStop={stopTimer}
+            onStop={handleStop}
             onQuickStart={handleQuickStart}
             onFocusLengthChange={handleFocusLengthChange}
             onBreakLengthChange={handleBreakLengthChange}

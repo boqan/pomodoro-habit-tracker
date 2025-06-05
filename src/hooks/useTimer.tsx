@@ -7,26 +7,33 @@ export const useTimer = (focusDuration: number, breakDuration: number) => {
   const [isBreak, setIsBreak] = useState(false);
   const [sessionDuration, setSessionDuration] = useState(focusDuration);
   const intervalRef = useRef<number | null>(null);
+  const pausedTimeRef = useRef<number | null>(null);
 
   const progress = sessionDuration > 0 ? (sessionDuration - timeLeft) / sessionDuration : 0;
 
   const startTimer = useCallback(() => {
+    if (pausedTimeRef.current !== null) {
+      setTimeLeft(pausedTimeRef.current);
+      pausedTimeRef.current = null;
+    }
     setIsRunning(true);
   }, []);
 
   const pauseTimer = useCallback(() => {
     setIsRunning(false);
-    // Just pause, don't reset anything
-  }, []);
+    pausedTimeRef.current = timeLeft;
+  }, [timeLeft]);
 
   const stopTimer = useCallback(() => {
     setIsRunning(false);
+    pausedTimeRef.current = null;
     setTimeLeft(isBreak ? breakDuration : focusDuration);
     setSessionDuration(isBreak ? breakDuration : focusDuration);
   }, [isBreak, focusDuration, breakDuration]);
 
   const switchToBreak = useCallback(() => {
     setIsBreak(true);
+    pausedTimeRef.current = null;
     setTimeLeft(breakDuration);
     setSessionDuration(breakDuration);
     setIsRunning(false);
@@ -34,6 +41,7 @@ export const useTimer = (focusDuration: number, breakDuration: number) => {
 
   const switchToFocus = useCallback(() => {
     setIsBreak(false);
+    pausedTimeRef.current = null;
     setTimeLeft(focusDuration);
     setSessionDuration(focusDuration);
     setIsRunning(false);
@@ -71,13 +79,18 @@ export const useTimer = (focusDuration: number, breakDuration: number) => {
   }, [isRunning, timeLeft]);
 
   // Update timer when focus/break duration changes (only if not running)
+  // When pausing the timer we don't want to reset the remaining time, so
+  // exclude `isRunning` from the dependency list. This ensures the timer
+  // updates only when the durations themselves change while the timer is not
+  // actively counting down.
   useEffect(() => {
     if (!isRunning) {
       const newDuration = isBreak ? breakDuration : focusDuration;
       setTimeLeft(newDuration);
       setSessionDuration(newDuration);
     }
-  }, [focusDuration, breakDuration, isBreak, isRunning]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusDuration, breakDuration, isBreak]);
 
   return {
     timeLeft,
