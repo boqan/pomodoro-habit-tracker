@@ -1,28 +1,31 @@
-
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
-import path from "path";
-import { componentTagger } from "lovable-tagger";
+import * as path from "path";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig({
   server: {
-    host: "::",
+    host: "localhost",
     port: 8080,
-    hmr: {
-      clientPort: 8080
-    }
+    open: true,
+    strictPort: true
   },
   plugins: [
     react(),
-    mode === 'development' && componentTagger(),
-  ].filter(Boolean),
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      // Force all packages to use the same React instance
+      "react": path.resolve(__dirname, "./node_modules/react"),
+      "react-dom": path.resolve(__dirname, "./node_modules/react-dom")
     },
+    dedupe: ['react', 'react-dom']
   },
-  define: {
-    __WS_TOKEN__: JSON.stringify(process.env.WS_TOKEN || ''),
+  optimizeDeps: {
+    include: ['react', 'react-dom', '@tanstack/react-query'],
+    force: true,
+    // Ensure React is loaded first
+    entries: ['src/main.tsx']
   }
-}));
+});

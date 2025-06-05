@@ -1,8 +1,11 @@
+import React from "react";
+import { createRoot } from "react-dom/client";
+import App from "./App";
+import "./index.css";
 
-import React from 'react';
-import { createRoot } from 'react-dom/client';
-import App from './App.tsx';
-import './index.css';
+// Debug code to verify React instance (keeping for now)
+window.React1 = React;
+console.log('React1 from main.tsx:', window.React1);
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
@@ -10,8 +13,4 @@ if (!rootElement) {
 }
 
 const root = createRoot(rootElement);
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+root.render(<App />);

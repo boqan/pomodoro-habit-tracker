@@ -77,7 +77,7 @@ export const useTimer = (focusDuration: number, breakDuration: number) => {
       setTimeLeft(newDuration);
       setSessionDuration(newDuration);
     }
-  }, [focusDuration, breakDuration, isBreak, isRunning]);
+  }, [focusDuration, breakDuration, isBreak]);
 
   return {
     timeLeft,
