@@ -71,13 +71,18 @@ export const useTimer = (focusDuration: number, breakDuration: number) => {
   }, [isRunning, timeLeft]);
 
   // Update timer when focus/break duration changes (only if not running)
+  // When pausing the timer we don't want to reset the remaining time, so
+  // exclude `isRunning` from the dependency list. This ensures the timer
+  // updates only when the durations themselves change while the timer is not
+  // actively counting down.
   useEffect(() => {
     if (!isRunning) {
       const newDuration = isBreak ? breakDuration : focusDuration;
       setTimeLeft(newDuration);
       setSessionDuration(newDuration);
     }
-  }, [focusDuration, breakDuration, isBreak, isRunning]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusDuration, breakDuration, isBreak]);
 
   return {
     timeLeft,

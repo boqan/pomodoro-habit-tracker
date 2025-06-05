@@ -6,7 +6,9 @@ import { QuickStartDialog } from './QuickStartDialog';
 
 interface TimerControlsProps {
   isRunning: boolean;
+  isPaused: boolean;
   onStart: () => void;
+  onResume: () => void;
   onPause: () => void;
   onStop: () => void;
   onQuickStart: (task: string) => void;
@@ -14,7 +16,9 @@ interface TimerControlsProps {
 
 export const TimerControls: React.FC<TimerControlsProps> = ({
   isRunning,
+  isPaused,
   onStart,
+  onResume,
   onPause,
   onStop,
   onQuickStart
@@ -22,9 +26,13 @@ export const TimerControls: React.FC<TimerControlsProps> = ({
   return (
     <div className="flex justify-center space-x-4">
       {!isRunning ? (
-        <Button onClick={onStart} size="lg" className="bg-primary hover:bg-primary/90">
+        <Button
+          onClick={isPaused ? onResume : onStart}
+          size="lg"
+          className="bg-primary hover:bg-primary/90"
+        >
           <Play className="h-5 w-5 mr-2" />
-          Start Focus
+          {isPaused ? 'Resume' : 'Start Focus'}
         </Button>
       ) : (
         <>
