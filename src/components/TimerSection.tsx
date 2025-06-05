@@ -9,11 +9,13 @@ interface TimerSectionProps {
   timeLeft: number;
   progress: number;
   isRunning: boolean;
+  isPaused: boolean;
   isBreak: boolean;
   focusLength: number;
   breakLength: number;
   shieldEnabled: boolean;
   onStart: () => void;
+  onResume: () => void;
   onPause: () => void;
   onStop: () => void;
   onQuickStart: (task: string) => void;
@@ -26,11 +28,13 @@ export const TimerSection: React.FC<TimerSectionProps> = ({
   timeLeft,
   progress,
   isRunning,
+  isPaused,
   isBreak,
   focusLength,
   breakLength,
   shieldEnabled,
   onStart,
+  onResume,
   onPause,
   onStop,
   onQuickStart,
@@ -58,7 +62,9 @@ export const TimerSection: React.FC<TimerSectionProps> = ({
 
         <TimerControls
           isRunning={isRunning}
+          isPaused={isPaused}
           onStart={onStart}
+          onResume={onResume}
           onPause={onPause}
           onStop={onStop}
           onQuickStart={onQuickStart}
