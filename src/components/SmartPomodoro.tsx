@@ -71,6 +71,15 @@ const SmartPomodoro = () => {
     }
   }, [darkMode]);
 
+  // Show or hide the overlay when the shield toggle changes
+  useEffect(() => {
+    if (shieldEnabled) {
+      setShowShield(true);
+    } else {
+      setShowShield(false);
+    }
+  }, [shieldEnabled]);
+
   const handleStart = () => {
     setShowIntentDialog(true);
   };
@@ -158,7 +167,15 @@ const SmartPomodoro = () => {
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       {showConfetti && <Confetti />}
-      {showShield && <DistractionShield timeLeft={timeLeft} onEscape={() => setShowShield(false)} />}
+      {showShield && (
+        <DistractionShield
+          timeLeft={timeLeft}
+          onEscape={() => {
+            setShowShield(false);
+            setShieldEnabled(false);
+          }}
+        />
+      )}
       
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
