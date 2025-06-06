@@ -33,6 +33,13 @@ export const DistractionShield: React.FC<DistractionShieldProps> = ({
     document.addEventListener('keydown', handleKeyDown);
     document.addEventListener('keydown', handleKeyDownPrevent, true);
 
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        onEscape();
+      }
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+      
     // Attempt to focus lock and enter fullscreen (works best in full browser)
     const originalTabIndex = document.body.tabIndex;
     document.body.tabIndex = -1;
@@ -44,6 +51,7 @@ export const DistractionShield: React.FC<DistractionShieldProps> = ({
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('keydown', handleKeyDownPrevent, true);
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
       document.body.tabIndex = originalTabIndex;
       if (document.fullscreenElement) {
         document.exitFullscreen().catch(() => null);
