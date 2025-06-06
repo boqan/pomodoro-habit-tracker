@@ -30,7 +30,7 @@ const SmartPomodoro = () => {
   const [showShield, setShowShield] = useState(false);
   const [showSessionComplete, setShowSessionComplete] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
   const [sessionStarted, setSessionStarted] = useState(false);
 
   const { 
