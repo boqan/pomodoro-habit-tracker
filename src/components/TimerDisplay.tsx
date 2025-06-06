@@ -1,16 +1,18 @@
-
 import React from 'react';
+import { Pause } from 'lucide-react';
 
 interface TimerDisplayProps {
   timeLeft: number;
   progress: number;
   isBreak: boolean;
+  isPaused?: boolean;
 }
 
 export const TimerDisplay: React.FC<TimerDisplayProps> = ({
   timeLeft,
   progress,
-  isBreak
+  isBreak,
+  isPaused = false
 }) => {
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -53,6 +55,16 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({
           </div>
         </div>
       </div>
+      
+      {/* Pause Overlay */}
+      {isPaused && (
+        <div className="absolute inset-0 bg-background/30 backdrop-blur-[2px] flex items-center justify-center rounded-full">
+          <div className="flex flex-col items-center space-y-2">
+            <Pause className="w-8 h-8 text-muted-foreground" />
+            <span className="text-sm font-medium text-muted-foreground">Paused</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

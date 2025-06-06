@@ -39,7 +39,7 @@ export const DistractionShield: React.FC<DistractionShieldProps> = ({
       }
     };
     document.addEventListener('fullscreenchange', handleFullscreenChange);
-
+      
     // Attempt to focus lock and enter fullscreen (works best in full browser)
     const originalTabIndex = document.body.tabIndex;
     document.body.tabIndex = -1;

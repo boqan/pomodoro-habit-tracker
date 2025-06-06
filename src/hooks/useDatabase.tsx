@@ -1,5 +1,22 @@
-
 import { useState, useEffect } from 'react';
+
+// Safe UUID generator that works in all environments
+const generateUUID = (): string => {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    try {
+      return crypto.randomUUID();
+    } catch (error) {
+      // Fallback if crypto.randomUUID fails
+    }
+  }
+  
+  // Fallback UUID generator
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
 
 interface Task {
   id: string;
@@ -136,7 +153,7 @@ export const useDatabase = () => {
   // Task operations
   const addTask = (title: string) => {
     const newTask: Task = {
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       title,
       done: false,
       createdAt: new Date()
@@ -159,7 +176,7 @@ export const useDatabase = () => {
   // Habit operations
   const addHabit = (name: string) => {
     const newHabit: Habit = {
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       name,
       streak: 0,
       lastDone: null
@@ -203,7 +220,7 @@ export const useDatabase = () => {
   // Session operations
   const addSession = (sessionData: Omit<Session, 'id'>) => {
     const newSession: Session = {
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       ...sessionData
     };
     setSessions(prev => [newSession, ...prev]);

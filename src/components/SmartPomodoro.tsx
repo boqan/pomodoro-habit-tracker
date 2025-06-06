@@ -30,7 +30,7 @@ const SmartPomodoro = () => {
   const [showShield, setShowShield] = useState(false);
   const [showSessionComplete, setShowSessionComplete] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
   const [sessionStarted, setSessionStarted] = useState(false);
 
   const { 
@@ -165,8 +165,9 @@ const SmartPomodoro = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
+    <div className="flex flex-col min-h-screen bg-background text-foreground transition-colors duration-300">
       {showConfetti && <Confetti />}
+
       {showShield && (
         <DistractionShield
           timeLeft={timeLeft}
