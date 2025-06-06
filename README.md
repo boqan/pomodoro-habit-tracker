@@ -24,7 +24,7 @@ A modern, feature-rich Pomodoro timer designed to combat procrastination with pr
 - **Session Integration**: Link tasks and habits to focus sessions
 
 ### PWA & Performance
-- **Offline First**: Works completely offline with service worker caching
+- **Offline First**: Works offline using a network-first service worker that refreshes cached files automatically
 - **Installable**: Add to home screen on mobile/desktop
 - **Fast Loading**: Optimized for 90+ Lighthouse Performance score
 - **Local Storage**: All data persists locally using browser storage
@@ -125,7 +125,7 @@ npm run preview
 - **100% Local**: No data leaves your device
 - **No Analytics**: No tracking or telemetry
 - **No Accounts**: No sign-up required
-- **Offline First**: Works without internet connection
+- **Offline First**: Works without internet using up-to-date cached assets
 
 ## 📈 Performance Targets
 
