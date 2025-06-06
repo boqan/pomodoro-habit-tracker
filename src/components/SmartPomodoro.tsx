@@ -71,6 +71,15 @@ const SmartPomodoro = () => {
     }
   }, [darkMode]);
 
+  // Show or hide the overlay when the shield toggle changes
+  useEffect(() => {
+    if (shieldEnabled) {
+      setShowShield(true);
+    } else {
+      setShowShield(false);
+    }
+  }, [shieldEnabled]);
+
   const handleStart = () => {
     setShowIntentDialog(true);
   };
