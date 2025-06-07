@@ -28,7 +28,9 @@ export const DistractionLog: React.FC<DistractionLogProps> = ({ visible }) => {
   if (!visible) return null;
 
   return (
-    <Card className="p-4 bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800">
+    <Card
+      className="p-4 bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-800 animate-in fade-in slide-in-from-top-2 duration-300"
+    >
       <div className="flex items-center gap-2 mb-3">
         <h3 className="font-medium text-orange-900 dark:text-orange-100">
           Distraction Log

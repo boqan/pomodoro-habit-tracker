@@ -71,6 +71,15 @@ const SmartPomodoro = () => {
     }
   }, [darkMode]);
 
+  // Show or hide the overlay when the shield toggle changes
+  useEffect(() => {
+    if (shieldEnabled) {
+      setShowShield(true);
+    } else {
+      setShowShield(false);
+    }
+  }, [shieldEnabled]);
+
   const handleStart = () => {
     setShowIntentDialog(true);
   };
@@ -156,11 +165,20 @@ const SmartPomodoro = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
+    <div className="flex flex-col min-h-screen bg-background text-foreground transition-colors duration-300">
       {showConfetti && <Confetti />}
-      {showShield && <DistractionShield timeLeft={timeLeft} onEscape={() => setShowShield(false)} />}
+
+      {showShield && (
+        <DistractionShield
+          timeLeft={timeLeft}
+          onEscape={() => {
+            setShowShield(false);
+            setShieldEnabled(false);
+          }}
+        />
+      )}
       
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 py-6 flex-grow">
         {/* Header */}
         <header className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
@@ -195,9 +213,6 @@ const SmartPomodoro = () => {
             </Button>
           </div>
         </header>
-
-        {/* Distraction Log - only show when timer is running */}
-        <DistractionLog visible={isRunning && !isBreak} />
 
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
@@ -247,6 +262,11 @@ const SmartPomodoro = () => {
               </TabsContent>
             </Tabs>
           </Card>
+        </div>
+
+        {/* Distraction Log - only show when timer is running */}
+        <div className="my-8 w-full lg:w-1/2 mx-auto">
+          <DistractionLog visible={isRunning && !isBreak} />
         </div>
       </div>
 

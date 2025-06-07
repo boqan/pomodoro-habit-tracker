@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 export const useTimer = (focusDuration: number, breakDuration: number) => {
@@ -8,6 +7,9 @@ export const useTimer = (focusDuration: number, breakDuration: number) => {
   const [sessionDuration, setSessionDuration] = useState(focusDuration);
   const intervalRef = useRef<number | null>(null);
   const pausedTimeRef = useRef<number | null>(null);
+
+  // Add isPaused state for UI
+  const isPaused = !isRunning && pausedTimeRef.current !== null;
 
   const progress = sessionDuration > 0 ? (sessionDuration - timeLeft) / sessionDuration : 0;
 
@@ -78,23 +80,19 @@ export const useTimer = (focusDuration: number, breakDuration: number) => {
     };
   }, [isRunning, timeLeft]);
 
-  // Update timer when focus/break duration changes (only if not running)
-  // When pausing the timer we don't want to reset the remaining time, so
-  // exclude `isRunning` from the dependency list. This ensures the timer
-  // updates only when the durations themselves change while the timer is not
-  // actively counting down.
+  // Update timer when focus/break duration changes (only if not running AND not paused)
   useEffect(() => {
-    if (!isRunning) {
+    if (!isRunning && pausedTimeRef.current === null) {
       const newDuration = isBreak ? breakDuration : focusDuration;
       setTimeLeft(newDuration);
       setSessionDuration(newDuration);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [focusDuration, breakDuration, isBreak]);
+  }, [focusDuration, breakDuration, isBreak, isRunning]);
 
   return {
     timeLeft,
     isRunning,
+    isPaused,
     isBreak,
     progress,
     startTimer,

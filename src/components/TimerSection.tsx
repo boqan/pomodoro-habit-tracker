@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { TimerDisplay } from './TimerDisplay';
@@ -58,6 +57,7 @@ export const TimerSection: React.FC<TimerSectionProps> = ({
           timeLeft={timeLeft}
           progress={progress}
           isBreak={isBreak}
+          isPaused={isPaused}
         />
 
         <TimerControls

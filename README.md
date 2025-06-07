@@ -61,7 +61,7 @@ npm run preview
 ## 🎮 How to Use
 
 1. **Set Timer**: Adjust focus and break durations to your preference
-2. **Enable Shield**: Toggle distraction shield for full-screen focus mode
+2. **Enable Shield**: Toggle distraction shield to instantly enter full-screen focus mode (ESC to exit)
 3. **Start Session**: Click "Start Focus" and set your session intent
 4. **Track Progress**: Add tasks and habits to track alongside your sessions
 5. **Earn XP**: Complete sessions to gain experience points and level up
@@ -69,7 +69,7 @@ npm run preview
 
 ### Quick Start Tips
 - Use the "Quick Start" button for common 2-minute tasks
-- Enable distraction shield for important work sessions
+- Enable distraction shield for important work sessions and press ESC when done
 - Check off habits immediately after completing them
 - Set specific, actionable intents for better focus
 
