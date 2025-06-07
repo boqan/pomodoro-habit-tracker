@@ -263,6 +263,11 @@ const SmartPomodoro = () => {
             </Tabs>
           </Card>
         </div>
+
+        {/* Distraction Log - only show when timer is running */}
+        <div className="my-8 w-full lg:w-1/2 mx-auto">
+          <DistractionLog visible={isRunning && !isBreak} />
+        </div>
       </div>
 
       {/* Distraction Log - only show when timer is running */}
