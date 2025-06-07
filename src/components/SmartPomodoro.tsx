@@ -214,9 +214,6 @@ const SmartPomodoro = () => {
           </div>
         </header>
 
-        {/* Distraction Log - only show when timer is running */}
-        <DistractionLog visible={isRunning && !isBreak} />
-
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
           {/* Timer Card */}
@@ -267,6 +264,9 @@ const SmartPomodoro = () => {
           </Card>
         </div>
       </div>
+
+      {/* Distraction Log - only show when timer is running */}
+      <DistractionLog visible={isRunning && !isBreak} />
 
       {/* Footer */}
       <Footer />
