@@ -270,9 +270,6 @@ const SmartPomodoro = () => {
         </div>
       </div>
 
-      {/* Distraction Log - only show when timer is running */}
-      <DistractionLog visible={isRunning && !isBreak} />
-
       {/* Footer */}
       <Footer />
 
