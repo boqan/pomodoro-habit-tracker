@@ -162,28 +162,25 @@ const SmartPomodoro = () => {
   };
 
   useEffect(() => {
-    if (!isRunning && timeLeft === 0) {
-      if (mode === 'pomodoro') {
-        if (isBreak) {
-          if (currentCycle < cycles) {
-            switchToFocus();
-            startTimer();
-          } else {
-            handleSessionComplete();
-          }
-        } else {
-          if (currentCycle < cycles) {
-            setCurrentCycle(prev => prev + 1);
-            switchToBreak();
-            startTimer();
-          } else {
-            handleSessionComplete();
-          }
-        }
-      } else if (!isBreak) {
-        handleSessionComplete();
-      }
+    if (isRunning || timeLeft !== 0) return;
+
+    if (mode !== 'pomodoro') {
+      if (!isBreak) handleSessionComplete();
+      return;
     }
+
+    const sessionComplete = () => handleSessionComplete();
+
+    if (isBreak) {
+      if (currentCycle >= cycles) return sessionComplete();
+      switchToFocus();
+    } else {
+      if (currentCycle >= cycles) return sessionComplete();
+      setCurrentCycle((c) => c + 1);
+      switchToBreak();
+    }
+
+    startTimer();
   }, [isRunning, timeLeft, isBreak, mode, cycles, currentCycle]);
 
   // Validation functions for timer inputs
