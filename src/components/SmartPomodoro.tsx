@@ -24,6 +24,9 @@ import { TimerSection } from './TimerSection';
 const SmartPomodoro = () => {
   const [focusLength, setFocusLength] = useState(25);
   const [breakLength, setBreakLength] = useState(5);
+  const [totalDuration, setTotalDuration] = useState(60);
+  const [mode, setMode] = useState<'regular' | 'pomodoro'>('regular');
+  const [currentCycle, setCurrentCycle] = useState(1);
   const [showIntentDialog, setShowIntentDialog] = useState(false);
   const [intent, setIntent] = useState('');
   const [shieldEnabled, setShieldEnabled] = useState(false);
@@ -37,13 +40,18 @@ const SmartPomodoro = () => {
     timeLeft, 
     isRunning, 
     isBreak, 
-    startTimer, 
-    pauseTimer, 
+    startTimer,
+    pauseTimer,
     stopTimer,
-    progress 
+    switchToBreak,
+    switchToFocus,
+    progress
   } = useTimer(focusLength * 60, breakLength * 60);
 
   const isPaused = sessionStarted && !isRunning && timeLeft > 0;
+
+  const cycles = Math.max(1, Math.floor(totalDuration / focusLength));
+  const breakCount = Math.max(0, cycles - 1);
 
   const {
     tasks,
@@ -93,6 +101,8 @@ const SmartPomodoro = () => {
 
   const handleQuickStart = (task: string) => {
     setIntent(task);
+    switchToFocus();
+    setCurrentCycle(1);
     startTimer();
     setSessionStarted(true);
     if (shieldEnabled) {
@@ -108,6 +118,8 @@ const SmartPomodoro = () => {
 
   const handleIntentSubmit = () => {
     setShowIntentDialog(false);
+    switchToFocus();
+    setCurrentCycle(1);
     startTimer();
     setSessionStarted(true);
     if (shieldEnabled) {
@@ -123,8 +135,10 @@ const SmartPomodoro = () => {
 
   const handleStop = () => {
     stopTimer();
+    switchToFocus();
     setShowShield(false);
     setSessionStarted(false);
+    setCurrentCycle(1);
   };
 
   const handleSessionComplete = () => {
@@ -148,10 +162,29 @@ const SmartPomodoro = () => {
   };
 
   useEffect(() => {
-    if (!isRunning && timeLeft === 0 && !isBreak) {
-      handleSessionComplete();
+    if (!isRunning && timeLeft === 0) {
+      if (mode === 'pomodoro') {
+        if (isBreak) {
+          if (currentCycle < cycles) {
+            switchToFocus();
+            startTimer();
+          } else {
+            handleSessionComplete();
+          }
+        } else {
+          if (currentCycle < cycles) {
+            setCurrentCycle(prev => prev + 1);
+            switchToBreak();
+            startTimer();
+          } else {
+            handleSessionComplete();
+          }
+        }
+      } else if (!isBreak) {
+        handleSessionComplete();
+      }
     }
-  }, [isRunning, timeLeft, isBreak]);
+  }, [isRunning, timeLeft, isBreak, mode, cycles, currentCycle]);
 
   // Validation functions for timer inputs
   const handleFocusLengthChange = (value: number) => {
@@ -162,6 +195,17 @@ const SmartPomodoro = () => {
   const handleBreakLengthChange = (value: number) => {
     const validValue = Math.max(1, Math.min(30, value)); // Min 1, Max 30
     setBreakLength(validValue);
+  };
+
+  const handleTotalDurationChange = (value: number) => {
+    const validValue = Math.max(1, value);
+    setTotalDuration(validValue);
+  };
+
+  const handleModeChange = (val: 'regular' | 'pomodoro') => {
+    setMode(val);
+    setCurrentCycle(1);
+    switchToFocus();
   };
 
   return (
@@ -223,16 +267,21 @@ const SmartPomodoro = () => {
             isRunning={isRunning}
             isPaused={isPaused}
             isBreak={isBreak}
+            mode={mode}
             focusLength={focusLength}
             breakLength={breakLength}
+            totalDuration={totalDuration}
+            breakCount={breakCount}
             shieldEnabled={shieldEnabled}
             onStart={handleStart}
             onResume={handleResume}
             onPause={pauseTimer}
             onStop={handleStop}
             onQuickStart={handleQuickStart}
+            onModeChange={handleModeChange}
             onFocusLengthChange={handleFocusLengthChange}
             onBreakLengthChange={handleBreakLengthChange}
+            onTotalDurationChange={handleTotalDurationChange}
             onShieldToggle={setShieldEnabled}
           />
 
