@@ -141,7 +141,7 @@ export const DualTimer: React.FC = () => {
       setRunning(false);
     }
   }, [index, schedule]);
-
+      
   useEffect(() => {
     if (!running) return;
     const id = window.setInterval(() => {
@@ -178,7 +178,6 @@ export const DualTimer: React.FC = () => {
     setIndex(0);
     setSecondsLeft(0);
   };
-
 
   const preview = describeSchedule(schedule, focusLen, shortBreak, effectiveLongBreak);
 
