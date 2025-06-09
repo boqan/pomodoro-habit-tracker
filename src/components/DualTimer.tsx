@@ -169,7 +169,7 @@ export const DualTimer: React.FC = () => {
 
         {mode === 'regular' ? (
             <Label htmlFor="regular" className="text-foreground">Minutes</Label>
-            <Input id="regular" type="number" className="w-24" value={regularMinutes} onChange={e => setRegularMinutes(Number(e.target.value))} />
+  const schedulePreview = describeSchedule(schedule, focusLen, shortBreak, effectiveLongBreak);
         ) : (
           <div className="space-y-4">
             <div className="flex items-center justify-center space-x-2">
@@ -257,7 +257,7 @@ export const DualTimer: React.FC = () => {
                     <Label htmlFor="focus">Focus</Label>
                     <Input id="focus" type="number" className="w-16" value={focusLen} onChange={e => setFocusLen(Number(e.target.value))} />
                   </div>
-                  <div className="flex items-center space-x-2">
+          <AlertDescription>{schedulePreview}</AlertDescription>
                     <Label htmlFor="break">Break</Label>
                     <Input id="break" type="number" className="w-16" value={shortBreak} onChange={e => setShortBreak(Number(e.target.value))} />
                   </div>
