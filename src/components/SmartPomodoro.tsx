@@ -19,7 +19,7 @@ import { Confetti } from './Confetti';
 import { XPTooltip } from './XPTooltip';
 import { DistractionLog } from './DistractionLog';
 import { Footer } from './Footer';
-import { TimerSection } from './TimerSection';
+import { DualTimer } from './DualTimer';
 
 const SmartPomodoro = () => {
   const [focusLength, setFocusLength] = useState(25);
@@ -258,29 +258,7 @@ const SmartPomodoro = () => {
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
           {/* Timer Card */}
-          <TimerSection
-            timeLeft={timeLeft}
-            progress={progress}
-            isRunning={isRunning}
-            isPaused={isPaused}
-            isBreak={isBreak}
-            mode={mode}
-            focusLength={focusLength}
-            breakLength={breakLength}
-            totalDuration={totalDuration}
-            breakCount={breakCount}
-            shieldEnabled={shieldEnabled}
-            onStart={handleStart}
-            onResume={handleResume}
-            onPause={pauseTimer}
-            onStop={handleStop}
-            onQuickStart={handleQuickStart}
-            onModeChange={handleModeChange}
-            onFocusLengthChange={handleFocusLengthChange}
-            onBreakLengthChange={handleBreakLengthChange}
-            onTotalDurationChange={handleTotalDurationChange}
-            onShieldToggle={setShieldEnabled}
-          />
+          <DualTimer />
 
           {/* Tasks and Habits */}
           <Card className="p-6">
