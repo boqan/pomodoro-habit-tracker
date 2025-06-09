@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/select';
 
 import { TimerDisplay } from './TimerDisplay';
+import { DistractionShield } from './DistractionShield';
 
 interface Segment {
   type: 'focus' | 'break' | 'longBreak';
