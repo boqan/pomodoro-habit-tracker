@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Settings, Target, Trophy, Zap } from 'lucide-react';
+import { Settings, Trophy, Zap } from 'lucide-react';
 import { useDatabase } from '../hooks/useDatabase';
 import { useTimer } from '../hooks/useTimer';
 import { TaskManager } from './TaskManager';
@@ -224,7 +224,7 @@ const SmartPomodoro = () => {
         <header className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <Target className="h-8 w-8 text-primary" />
+              <img src="/logo.png" alt="Smart Pomodoro logo" className="h-8 w-8" />
               <h1 className="text-3xl font-bold text-foreground">Smart Pomodoro 2.0</h1>
             </div>
             <Badge variant="secondary" className="flex items-center space-x-1">
