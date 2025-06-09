@@ -118,14 +118,29 @@ export const DualTimer: React.FC = () => {
     }
   }, [method]);
 
-  const schedule = mode === 'pomodoro'
-    ? computeSchedule(totalMinutes, focusLen, shortBreak, effectiveLongBreak, interval)
-    : [{ type: 'focus', duration: regularMinutes }];
+  const schedule = React.useMemo(
+    () =>
+      mode === 'pomodoro'
+        ? computeSchedule(totalMinutes, focusLen, shortBreak, effectiveLongBreak, interval)
+        : [{ type: 'focus', duration: regularMinutes }],
+    [mode, totalMinutes, focusLen, shortBreak, effectiveLongBreak, interval, regularMinutes]
+  );
 
   const [index, setIndex] = useState(0);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [running, setRunning] = useState(false);
   const [paused, setPaused] = useState(false);
+
+  const handleSegmentEnd = React.useCallback(() => {
+    if (index + 1 < schedule.length) {
+      const next = index + 1;
+      setIndex(next);
+      setSecondsLeft(schedule[next].duration * 60);
+      setRunning(true);
+    } else {
+      setRunning(false);
+    }
+  }, [index, schedule]);
 
   useEffect(() => {
     if (!running) return;
@@ -164,16 +179,6 @@ export const DualTimer: React.FC = () => {
     setSecondsLeft(0);
   };
 
-  const handleSegmentEnd = () => {
-    if (index + 1 < schedule.length) {
-      const next = index + 1;
-      setIndex(next);
-      setSecondsLeft(schedule[next].duration * 60);
-      setRunning(true);
-    } else {
-      setRunning(false);
-    }
-  };
 
   const preview = describeSchedule(schedule, focusLen, shortBreak, effectiveLongBreak);
 
