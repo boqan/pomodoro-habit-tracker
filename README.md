@@ -7,6 +7,7 @@ A modern, feature-rich Pomodoro timer designed to combat procrastination with pr
 
 ### Core Timer
 - **Customizable Focus/Break Periods**: Adjust focus (1-60 min) and break (1-30 min) durations
+- **Pomodoro Mode**: Automatically cycle focus and break sessions for a set total time
 - **Visual Countdown**: Beautiful circular progress indicator with smooth animations
 - **Audio & Vibration**: Session completion notifications (where supported)
 - **Responsive Design**: Works perfectly on desktop, tablet, and mobile
