@@ -59,6 +59,10 @@ npm run preview
 - Safari 14+
 - Mobile browsers with PWA support
 
+### Development Tips
+- Run `npm run lint` to catch TypeScript or JSX issues early.
+- If `npm run build` fails with a Rollup native module error, delete `node_modules` and `package-lock.json` then reinstall with `npm install`.
+
 ## 🎮 How to Use
 
 1. **Set Timer**: Adjust focus and break durations to your preference
