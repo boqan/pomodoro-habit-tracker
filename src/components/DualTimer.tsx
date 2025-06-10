@@ -71,7 +71,7 @@ function describeSchedule(schedule: Segment[], focusLen: number, shortBreak: num
     else if (s.type === 'break') breakCount++;
     else longBreakCount++;
   });
-  const parts = [`You'll work ${focusCount} × ${focusLen} min`];
+  const parts = [`You will work ${focusCount} × ${focusLen} min`];
   if (breakCount > 0) parts.push(`${breakCount} × ${shortBreak} min breaks`);
   if (longBreakCount > 0) parts.push(`${longBreakCount} × ${longBreak} min long breaks`);
   if (schedule.length && schedule[schedule.length - 1].duration !== focusLen) {
