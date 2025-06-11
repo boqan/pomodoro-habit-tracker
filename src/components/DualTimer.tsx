@@ -15,7 +15,6 @@ import {
 } from '@/components/ui/select';
 
 import { TimerDisplay } from './TimerDisplay';
-import { DistractionShield } from './DistractionShield';
 
 interface Segment {
   type: 'focus' | 'break' | 'longBreak';
@@ -97,8 +96,6 @@ export const DualTimer: React.FC = () => {
   const [longChoice, setLongChoice] = useState<'15' | '30' | 'custom'>('15');
   const [customLong, setCustomLong] = useState(15);
   const [showSettings, setShowSettings] = useState(false);
-  const [shieldEnabled, setShieldEnabled] = useState(false);
-  const [showShield, setShowShield] = useState(false);
 
   const effectiveLongBreak = longChoice === 'custom' ? customLong : parseInt(longChoice, 10);
 
@@ -134,15 +131,6 @@ export const DualTimer: React.FC = () => {
   const [running, setRunning] = useState(false);
   const [paused, setPaused] = useState(false);
 
-  // Show the distraction shield overlay only when the timer is active
-  useEffect(() => {
-    if ((running || paused) && shieldEnabled) {
-      setShowShield(true);
-    } else {
-      setShowShield(false);
-    }
-  }, [running, paused, shieldEnabled]);
-
   const handleSegmentEnd = React.useCallback(() => {
     if (index + 1 < schedule.length) {
       const next = index + 1;
@@ -151,100 +139,75 @@ export const DualTimer: React.FC = () => {
       setRunning(true);
     } else {
       setRunning(false);
-      setShieldEnabled(false);
     }
   }, [index, schedule]);
-  // Countdown effect
+      
+  useEffect(() => {
+    if (!running) return;
+    const id = window.setInterval(() => {
+      setSecondsLeft((s) => {
+        if (s <= 1) {
+          clearInterval(id);
+          handleSegmentEnd();
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [running, handleSegmentEnd]);
 
-      setSecondsLeft((prev) => {
-        if (prev <= 1) {
-        return prev - 1;
-      {showShield && (
-        <DistractionShield timeLeft={secondsLeft} onEscape={() => setShieldEnabled(false)} />
-      )}
-      <div
-        className={`transition-all duration-500 overflow-hidden ${settingsVisible ? 'opacity-100 max-h-[800px]' : 'opacity-0 max-h-0 pointer-events-none'}`}
-      >
-        <div className="flex items-center space-x-2 justify-center">
-          <Label htmlFor="mode">Auto Pomodoro</Label>
-          <Switch id="mode" checked={mode === 'pomodoro'} onCheckedChange={c => setMode(c ? 'pomodoro' : 'regular')} />
+  const start = () => {
+    if (!schedule.length) return;
+    setIndex(0);
+    setSecondsLeft(schedule[0].duration * 60);
+    setRunning(true);
+    setPaused(false);
+  };
+  const pause = () => {
+    setRunning(false);
+    setPaused(true);
+  };
+  const resume = () => {
+    setRunning(true);
+    setPaused(false);
+  };
+  const stop = () => {
+    setRunning(false);
+    setPaused(false);
+    setIndex(0);
+    setSecondsLeft(0);
+  };
 
-        {mode === 'regular' ? (
-            <Label htmlFor="regular" className="text-foreground">Minutes</Label>
-  const schedulePreview = describeSchedule(schedule, focusLen, shortBreak, effectiveLongBreak);
-        ) : (
-          <div className="space-y-4">
-            <div className="flex items-center justify-center space-x-2">
-              <Label htmlFor="total" className="text-foreground">Total focus window, min</Label>
-              <Input id="total" type="number" className="w-24" value={totalMinutes} onChange={e => setTotalMinutes(Number(e.target.value))} />
-            <Button variant="outline" onClick={() => setShowSettings(s => !s)}>Customize Pomodoro Settings</Button>
-            {showSettings && (
-              <div className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <Label htmlFor="method">Method</Label>
-                  <Select value={method} onValueChange={v => setMethod(v as 'classic' | '50' | '60' | 'custom')}>
-                    <SelectTrigger id="method" className="w-40">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="classic">Classic 25/5</SelectItem>
-                      <SelectItem value="50">50/10</SelectItem>
-                      <SelectItem value="60">60/15</SelectItem>
-                      <SelectItem value="custom">Custom</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                {method === 'custom' && (
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="flex items-center space-x-2">
-                      <Label htmlFor="focus">Focus</Label>
-                      <Input id="focus" type="number" className="w-16" value={focusLen} onChange={e => setFocusLen(Number(e.target.value))} />
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Label htmlFor="break">Break</Label>
-                      <Input id="break" type="number" className="w-16" value={shortBreak} onChange={e => setShortBreak(Number(e.target.value))} />
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Label htmlFor="long">Long Break</Label>
-                      <Input id="long" type="number" className="w-16" value={longBreak} onChange={e => setLongBreak(Number(e.target.value))} />
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Label htmlFor="interval">Blocks before long break</Label>
-                      <Input id="interval" type="number" className="w-16" value={interval} onChange={e => setIntervalCount(Number(e.target.value))} />
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-            {totalMinutes > 120 && (
-              <div className="space-y-2">
-                <p className="text-sm text-center">Studies show that after 2 hours your effectiveness degrades - choose your long breaks duration.</p>
-                <ToggleGroup
-                  type="single"
-                  value={longChoice}
-                  onValueChange={(v) => v && setLongChoice(v as '15' | '30' | 'custom')}
-                  className="flex justify-center"
-                >
-                  <ToggleGroupItem value="15">15 min</ToggleGroupItem>
-                  <ToggleGroupItem value="30">30 min</ToggleGroupItem>
-                  <ToggleGroupItem value="custom" className="px-2">
-                    <Input type="number" className="w-12" value={customLong} onChange={e => setCustomLong(Number(e.target.value))} />
-                  </ToggleGroupItem>
-                </ToggleGroup>
-              </div>
-            )}
-          </div>
-        )}
+  const preview = describeSchedule(schedule, focusLen, shortBreak, effectiveLongBreak);
 
-        <Alert className="mt-4">
-          <AlertDescription>{preview}</AlertDescription>
-        </Alert>
+  return (
+    <Card className="p-6 space-y-6">
+      <div className="flex items-center space-x-2 justify-center">
+        <Label htmlFor="mode">Auto Pomodoro</Label>
+        <Switch id="mode" checked={mode === 'pomodoro'} onCheckedChange={c => setMode(c ? 'pomodoro' : 'regular')} />
       </div>
 
-      {!settingsVisible && (
-        <div className="flex items-center justify-center space-x-2 transition-opacity duration-500">
-          <Switch id="shield" checked={shieldEnabled} onCheckedChange={setShieldEnabled} />
-          <Label htmlFor="shield">Distraction Shield</Label>
+      {mode === 'regular' ? (
+        <div className="flex items-center justify-center space-x-2">
+          <Label htmlFor="regular" className="text-foreground">Minutes</Label>
+          <Input id="regular" type="number" className="w-24" value={regularMinutes} onChange={e => setRegularMinutes(Number(e.target.value))} />
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="flex items-center justify-center space-x-2">
+            <Label htmlFor="total" className="text-foreground">Total focus window, min</Label>
+            <Input id="total" type="number" className="w-24" value={totalMinutes} onChange={e => setTotalMinutes(Number(e.target.value))} />
+          </div>
+          <Button variant="outline" onClick={() => setShowSettings(s => !s)}>Customize Pomodoro Settings</Button>
+          {showSettings && (
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <Label htmlFor="method">Method</Label>
+                <Select value={method} onValueChange={v => setMethod(v as 'classic' | '50' | '60' | 'custom')}>
+                  <SelectTrigger id="method" className="w-40">
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="classic">Classic 25/5</SelectItem>
                     <SelectItem value="50">50/10</SelectItem>
@@ -259,7 +222,7 @@ export const DualTimer: React.FC = () => {
                     <Label htmlFor="focus">Focus</Label>
                     <Input id="focus" type="number" className="w-16" value={focusLen} onChange={e => setFocusLen(Number(e.target.value))} />
                   </div>
-          <AlertDescription>{schedulePreview}</AlertDescription>
+                  <div className="flex items-center space-x-2">
                     <Label htmlFor="break">Break</Label>
                     <Input id="break" type="number" className="w-16" value={shortBreak} onChange={e => setShortBreak(Number(e.target.value))} />
                   </div>
