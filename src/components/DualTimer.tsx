@@ -154,6 +154,9 @@ export const DualTimer: React.FC = () => {
       setShieldEnabled(false);
     }
   }, [index, schedule]);
+  // Countdown effect
+
+
     setShieldEnabled(false);
   const settingsVisible = !running && !paused;
     <Card className="p-6 space-y-6 relative">
