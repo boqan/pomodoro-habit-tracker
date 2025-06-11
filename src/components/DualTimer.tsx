@@ -156,10 +156,9 @@ export const DualTimer: React.FC = () => {
   }, [index, schedule]);
   // Countdown effect
 
-
-    setShieldEnabled(false);
-  const settingsVisible = !running && !paused;
-    <Card className="p-6 space-y-6 relative">
+      setSecondsLeft((prev) => {
+        if (prev <= 1) {
+        return prev - 1;
       {showShield && (
         <DistractionShield timeLeft={secondsLeft} onEscape={() => setShieldEnabled(false)} />
       )}
