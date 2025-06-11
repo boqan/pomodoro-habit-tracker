@@ -96,6 +96,7 @@ export const DualTimer: React.FC = () => {
   const [longChoice, setLongChoice] = useState<'15' | '30' | 'custom'>('15');
   const [customLong, setCustomLong] = useState(15);
   const [showSettings, setShowSettings] = useState(false);
+  const [shieldEnabled, setShieldEnabled] = useState(false);
 
   const effectiveLongBreak = longChoice === 'custom' ? customLong : parseInt(longChoice, 10);
 
@@ -118,7 +119,7 @@ export const DualTimer: React.FC = () => {
     }
   }, [method]);
 
-  const schedule = React.useMemo(
+  const schedule: Segment[] = React.useMemo(
     () =>
       mode === 'pomodoro'
         ? computeSchedule(totalMinutes, focusLen, shortBreak, effectiveLongBreak, interval)
@@ -130,6 +131,7 @@ export const DualTimer: React.FC = () => {
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [running, setRunning] = useState(false);
   const [paused, setPaused] = useState(false);
+  const settingsVisible = !running && !paused;
 
   const handleSegmentEnd = React.useCallback(() => {
     if (index + 1 < schedule.length) {
@@ -183,10 +185,13 @@ export const DualTimer: React.FC = () => {
 
   return (
     <Card className="p-6 space-y-6">
-      <div className="flex items-center space-x-2 justify-center">
-        <Label htmlFor="mode">Auto Pomodoro</Label>
-        <Switch id="mode" checked={mode === 'pomodoro'} onCheckedChange={c => setMode(c ? 'pomodoro' : 'regular')} />
-      </div>
+      <div
+        className={`transition-all duration-500 overflow-hidden ${settingsVisible ? 'opacity-100 max-h-[800px]' : 'opacity-0 max-h-0 pointer-events-none'}`}
+      >
+        <div className="flex items-center space-x-2 justify-center">
+          <Label htmlFor="mode">Auto Pomodoro</Label>
+          <Switch id="mode" checked={mode === 'pomodoro'} onCheckedChange={c => setMode(c ? 'pomodoro' : 'regular')} />
+        </div>
 
       {mode === 'regular' ? (
         <div className="flex items-center justify-center space-x-2">
@@ -253,9 +258,17 @@ export const DualTimer: React.FC = () => {
         </div>
       )}
 
-      <Alert>
-        <AlertDescription>{preview}</AlertDescription>
-      </Alert>
+        <Alert className="mt-4">
+          <AlertDescription>{preview}</AlertDescription>
+        </Alert>
+      </div>
+
+      {!settingsVisible && (
+        <div className="flex items-center justify-center space-x-2 transition-opacity duration-500">
+          <Switch id="shield" checked={shieldEnabled} onCheckedChange={setShieldEnabled} />
+          <Label htmlFor="shield">Distraction Shield</Label>
+        </div>
+      )}
 
       <TimerDisplay timeLeft={secondsLeft} progress={schedule.length ? (schedule[index].duration * 60 - secondsLeft) / (schedule[index].duration * 60) : 0} isBreak={schedule[index]?.type !== 'focus'} isPaused={paused} />
 
