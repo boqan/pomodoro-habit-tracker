@@ -58,28 +58,47 @@ function computeSchedule(
   if (minutes >= focusLen / 2) {
     schedule.push({ type: 'focus', duration: minutes });
   }
+  const hasLongBreak = schedule.some((s) => s.type === 'longBreak');
+  if (!hasLongBreak && total >= 120) {
+    schedule.push({ type: 'longBreak', duration: longBreak });
+  }
   return schedule;
 }
 
-function describeSchedule(schedule: Segment[], focusLen: number, shortBreak: number, longBreak: number) {
-  let focusCount = 0;
-  let breakCount = 0;
-  let longBreakCount = 0;
-  schedule.forEach((s) => {
-    if (s.type === 'focus') focusCount++;
-    else if (s.type === 'break') breakCount++;
-    else longBreakCount++;
-  });
-  const parts = [`You will work ${focusCount} × ${focusLen} min`];
-  if (breakCount > 0) parts.push(`${breakCount} × ${shortBreak} min breaks`);
-  if (longBreakCount > 0) parts.push(`${longBreakCount} × ${longBreak} min long breaks`);
-  if (schedule.length && schedule[schedule.length - 1].duration !== focusLen) {
-    const extra = schedule[schedule.length - 1];
-    if (extra.type === 'focus' && extra.duration !== focusLen) {
-      parts.push(`final focus ${extra.duration} min`);
-    }
+function describeSchedule(
+  schedule: Segment[],
+  focusLen: number,
+  shortBreak: number,
+  longBreak: number
+) {
+  let fullFocus = 0;
+  let shortCount = 0;
+  let longCount = 0;
+  let partial: number | null = null;
+  for (const seg of schedule) {
+    if (seg.type === 'focus') {
+      if (seg.duration === focusLen) fullFocus++;
+      else partial = seg.duration;
+    } else if (seg.type === 'break') shortCount++;
+    else longCount++;
   }
-  return parts.join(' with ') + '.';
+
+  let message = '';
+  if (fullFocus > 0) {
+    message = `You will work ${fullFocus} × ${focusLen} min`;
+  } else if (partial !== null) {
+    message = `You will focus for ${partial} min`;
+  } else {
+    message = 'No focus time scheduled';
+  }
+
+  const extras: string[] = [];
+  if (fullFocus > 0 && partial !== null) extras.push(`final focus ${partial} min`);
+  if (shortCount > 0) extras.push(`${shortCount} × ${shortBreak} min breaks`);
+  if (longCount > 0) extras.push(`${longCount} × ${longBreak} min long breaks`);
+
+  if (extras.length) message += ' with ' + extras.join(' with ');
+  return message + '.';
 }
 
 export const DualTimer: React.FC = () => {
@@ -245,7 +264,7 @@ export const DualTimer: React.FC = () => {
               )}
             </div>
           )}
-          {mode === 'pomodoro' && totalMinutes > 120 && (
+          {mode === 'pomodoro' && totalMinutes >= 120 && (
             <div className="space-y-2">
               <p className="text-sm text-center">Studies show that after 2 hours your effectiveness degrades - choose your long breaks duration.</p>
               <ToggleGroup type="single" value={longChoice} onValueChange={v => v && setLongChoice(v as '15' | '30' | 'custom')} className="flex justify-center">
