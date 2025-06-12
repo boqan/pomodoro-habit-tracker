@@ -185,27 +185,29 @@ export const DualTimer: React.FC = () => {
 
   return (
     <Card className="p-6 space-y-6">
-      <div
-        className={`transition-all duration-500 overflow-hidden ${settingsVisible ? 'opacity-100 max-h-[800px]' : 'opacity-0 max-h-0 pointer-events-none'}`}
-      >
-        <div className="flex items-center space-x-2 justify-center">
-          <Label htmlFor="mode">Auto Pomodoro</Label>
-          <Switch id="mode" checked={mode === 'pomodoro'} onCheckedChange={c => setMode(c ? 'pomodoro' : 'regular')} />
-        </div>
-
-      {mode === 'regular' ? (
-        <div className="flex items-center justify-center space-x-2">
-          <Label htmlFor="regular" className="text-foreground">Minutes</Label>
-          <Input id="regular" type="number" className="w-24" value={regularMinutes} onChange={e => setRegularMinutes(Number(e.target.value))} />
-        </div>
-      ) : (
-        <div className="space-y-4">
-          <div className="flex items-center justify-center space-x-2">
-            <Label htmlFor="total" className="text-foreground">Total focus window, min</Label>
-            <Input id="total" type="number" className="w-24" value={totalMinutes} onChange={e => setTotalMinutes(Number(e.target.value))} />
+      <div className={`transition-all duration-500 overflow-hidden ${settingsVisible ? 'opacity-100 max-h-[800px]' : 'opacity-0 max-h-0 pointer-events-none'}`}> 
+        <div className="flex flex-col items-center space-y-4">
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <div className="flex items-center space-x-2">
+              <Label htmlFor="mode">Auto Pomodoro</Label>
+              <Switch id="mode" checked={mode === 'pomodoro'} onCheckedChange={c => setMode(c ? 'pomodoro' : 'regular')} />
+            </div>
+            {mode === 'regular' ? (
+              <div className="flex items-center space-x-2">
+                <Label htmlFor="regular" className="text-foreground">Minutes</Label>
+                <Input id="regular" type="number" className="w-24" value={regularMinutes} onChange={e => setRegularMinutes(Number(e.target.value))} />
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Label htmlFor="total" className="text-foreground">Total focus window, min</Label>
+                <Input id="total" type="number" className="w-24" value={totalMinutes} onChange={e => setTotalMinutes(Number(e.target.value))} />
+              </div>
+            )}
           </div>
-          <Button variant="outline" onClick={() => setShowSettings(s => !s)}>Customize Pomodoro Settings</Button>
-          {showSettings && (
+          {mode === 'pomodoro' && (
+            <Button variant="outline" onClick={() => setShowSettings(s => !s)} className="mx-auto">Customize Pomodoro Settings</Button>
+          )}
+          {mode === 'pomodoro' && showSettings && (
             <div className="space-y-4">
               <div className="flex items-center space-x-2">
                 <Label htmlFor="method">Method</Label>
@@ -243,20 +245,20 @@ export const DualTimer: React.FC = () => {
               )}
             </div>
           )}
-          {totalMinutes > 120 && (
+          {mode === 'pomodoro' && totalMinutes > 120 && (
             <div className="space-y-2">
               <p className="text-sm text-center">Studies show that after 2 hours your effectiveness degrades - choose your long breaks duration.</p>
               <ToggleGroup type="single" value={longChoice} onValueChange={v => v && setLongChoice(v as '15' | '30' | 'custom')} className="flex justify-center">
                 <ToggleGroupItem value="15">15 min</ToggleGroupItem>
                 <ToggleGroupItem value="30">30 min</ToggleGroupItem>
-                <ToggleGroupItem value="custom" className="px-2">
-                  <Input type="number" className="w-12" value={customLong} onChange={e => setCustomLong(Number(e.target.value))} />
-                </ToggleGroupItem>
-              </ToggleGroup>
-            </div>
-          )}
-        </div>
+          <ToggleGroupItem value="custom" className="px-2">
+            <Input type="number" className="w-12" value={customLong} onChange={e => setCustomLong(Number(e.target.value))} />
+          </ToggleGroupItem>
+        </ToggleGroup>
+      </div>
       )}
+
+        </div>
 
         <Alert className="mt-4">
           <AlertDescription>{preview}</AlertDescription>
