@@ -65,40 +65,64 @@ function computeSchedule(
   return schedule;
 }
 
-function describeSchedule(
-  schedule: Segment[],
+interface ScheduleSummary {
+  workBlocks: number;
+  partialFocus: number | null;
+  shortBreaks: number;
+  longBreaks: number;
+}
+
+// Summarize the computed schedule for easy rendering in the preview alert
+function summarizeSchedule(schedule: Segment[], focusLen: number): ScheduleSummary {
+  let workBlocks = 0;
+  let partialFocus: number | null = null;
+  let shortBreaks = 0;
+  let longBreaks = 0;
+
+  for (const seg of schedule) {
+    if (seg.type === 'focus') {
+      if (seg.duration === focusLen) workBlocks++;
+      else partialFocus = seg.duration;
+    } else if (seg.type === 'break') {
+      shortBreaks++;
+    } else {
+      longBreaks++;
+    }
+  }
+
+  return { workBlocks, partialFocus, shortBreaks, longBreaks };
+}
+
+// Convert the summary into React nodes so we can show multiple lines
+function renderScheduleSummary(
+  summary: ScheduleSummary,
   focusLen: number,
   shortBreak: number,
   longBreak: number
 ) {
-  let fullFocus = 0;
-  let shortCount = 0;
-  let longCount = 0;
-  let partial: number | null = null;
-  for (const seg of schedule) {
-    if (seg.type === 'focus') {
-      if (seg.duration === focusLen) fullFocus++;
-      else partial = seg.duration;
-    } else if (seg.type === 'break') shortCount++;
-    else longCount++;
+  const lines: string[] = [];
+
+  if (summary.workBlocks > 0) {
+    lines.push(`Work blocks: ${summary.workBlocks} × ${focusLen} min`);
+  }
+  if (summary.partialFocus !== null) {
+    lines.push(`Final focus block: ${summary.partialFocus} min`);
+  }
+  if (summary.shortBreaks > 0) {
+    lines.push(`Breaks: ${summary.shortBreaks} × ${shortBreak} min`);
+  }
+  if (summary.longBreaks > 0) {
+    lines.push(`Long breaks: ${summary.longBreaks} × ${longBreak} min`);
   }
 
-  let message = '';
-  if (fullFocus > 0) {
-    message = `You will work ${fullFocus} × ${focusLen} min`;
-  } else if (partial !== null) {
-    message = `You will focus for ${partial} min`;
-  } else {
-    message = 'No focus time scheduled';
-  }
-
-  const extras: string[] = [];
-  if (fullFocus > 0 && partial !== null) extras.push(`final focus ${partial} min`);
-  if (shortCount > 0) extras.push(`${shortCount} × ${shortBreak} min breaks`);
-  if (longCount > 0) extras.push(`${longCount} × ${longBreak} min long breaks`);
-
-  if (extras.length) message += ' with ' + extras.join(' with ');
-  return message + '.';
+  return (
+    <>
+      <p className="font-semibold">Your Pomodoro Schedule</p>
+      {lines.map((line) => (
+        <p key={line}>{line}</p>
+      ))}
+    </>
+  );
 }
 
 export const DualTimer: React.FC = () => {
@@ -200,7 +224,11 @@ export const DualTimer: React.FC = () => {
     setSecondsLeft(0);
   };
 
-  const preview = describeSchedule(schedule, focusLen, shortBreak, effectiveLongBreak);
+  const summary = React.useMemo(() => summarizeSchedule(schedule, focusLen), [schedule, focusLen]);
+  const preview = React.useMemo(
+    () => renderScheduleSummary(summary, focusLen, shortBreak, effectiveLongBreak),
+    [summary, focusLen, shortBreak, effectiveLongBreak]
+  );
 
   return (
     <Card className="p-6 space-y-6">
