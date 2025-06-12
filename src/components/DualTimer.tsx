@@ -4,7 +4,6 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import {
   Select,
@@ -116,12 +115,12 @@ function renderScheduleSummary(
   }
 
   return (
-    <>
+    <div className="mt-4 text-center text-sm text-muted-foreground space-y-1">
       <p className="font-semibold">Your Pomodoro Schedule</p>
       {lines.map((line) => (
         <p key={line}>{line}</p>
       ))}
-    </>
+    </div>
   );
 }
 
@@ -307,9 +306,7 @@ export const DualTimer: React.FC = () => {
 
         </div>
 
-        <Alert className="mt-4">
-          <AlertDescription>{preview}</AlertDescription>
-        </Alert>
+        {preview}
       </div>
 
       {!settingsVisible && (
