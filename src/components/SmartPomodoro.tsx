@@ -35,6 +35,8 @@ const SmartPomodoro = () => {
   const [showConfetti, setShowConfetti] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
   const [sessionStarted, setSessionStarted] = useState(false);
+  const [dualRunning, setDualRunning] = useState(false);
+  const [dualIsBreak, setDualIsBreak] = useState(false);
 
   const { 
     timeLeft, 
@@ -256,12 +258,12 @@ const SmartPomodoro = () => {
         </header>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
           {/* Timer Card */}
-          <DualTimer />
+          <DualTimer onStateChange={(r, b) => {setDualRunning(r); setDualIsBreak(b);}} />
 
           {/* Tasks and Habits */}
-          <Card className="p-6">
+          <Card className="p-6 max-w-md mx-auto rounded-2xl shadow-lg bg-gradient-to-br from-card via-muted/50 to-background">
             <Tabs defaultValue="tasks" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="tasks">Tasks</TabsTrigger>
@@ -289,8 +291,8 @@ const SmartPomodoro = () => {
         </div>
 
         {/* Distraction Log - only show when timer is running */}
-        <div className="my-8 w-full lg:w-1/2 mx-auto">
-          <DistractionLog visible={isRunning && !isBreak} />
+        <div className="my-6 w-full lg:w-1/2 mx-auto">
+          <DistractionLog visible={dualRunning && !dualIsBreak} />
         </div>
       </div>
 

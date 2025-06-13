@@ -124,7 +124,11 @@ function renderScheduleSummary(
   );
 }
 
-export const DualTimer: React.FC = () => {
+interface DualTimerProps {
+  onStateChange?: (running: boolean, isBreak: boolean) => void;
+}
+
+export const DualTimer: React.FC<DualTimerProps> = ({ onStateChange }) => {
   const [mode, setMode] = useState<'regular' | 'pomodoro'>('regular');
   const [regularMinutes, setRegularMinutes] = useState(25);
   const [totalMinutes, setTotalMinutes] = useState(60);
@@ -174,6 +178,11 @@ export const DualTimer: React.FC = () => {
   const [running, setRunning] = useState(false);
   const [paused, setPaused] = useState(false);
   const settingsVisible = !running && !paused;
+
+  // notify parent when running state or segment changes
+  useEffect(() => {
+    onStateChange?.(running, schedule[index]?.type !== 'focus');
+  }, [onStateChange, running, index, schedule]);
 
   const handleSegmentEnd = React.useCallback(() => {
     if (index + 1 < schedule.length) {
