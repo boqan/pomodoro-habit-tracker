@@ -230,10 +230,16 @@ export const DualTimer: React.FC = () => {
   );
 
   return (
-    <Card className="p-6 space-y-6">
-      <div className={`transition-all duration-500 overflow-hidden ${settingsVisible ? 'opacity-100 max-h-[800px]' : 'opacity-0 max-h-0 pointer-events-none'}`}> 
-        <div className="flex flex-col items-center space-y-4">
-          <div className="flex flex-wrap items-center justify-center gap-4">
+    <Card className="max-w-md mx-auto p-8 space-y-8 border-none rounded-2xl shadow-lg bg-gradient-to-br from-card via-muted/50 to-background">
+      <TimerDisplay
+        timeLeft={secondsLeft}
+        progress={schedule.length ? (schedule[index].duration * 60 - secondsLeft) / (schedule[index].duration * 60) : 0}
+        isBreak={schedule[index]?.type !== 'focus'}
+        isPaused={paused}
+      />
+      <div className={`transition-all duration-500 overflow-hidden ${settingsVisible ? 'opacity-100 max-h-[800px]' : 'opacity-0 max-h-0 pointer-events-none'}`}>
+        <div className="flex flex-col items-center space-y-6">
+          <div className="flex flex-wrap items-center justify-center gap-6">
             <div className="flex items-center space-x-2">
               <Label htmlFor="mode">Auto Pomodoro</Label>
               <Switch id="mode" checked={mode === 'pomodoro'} onCheckedChange={c => setMode(c ? 'pomodoro' : 'regular')} />
@@ -315,8 +321,6 @@ export const DualTimer: React.FC = () => {
           <Label htmlFor="shield">Distraction Shield</Label>
         </div>
       )}
-
-      <TimerDisplay timeLeft={secondsLeft} progress={schedule.length ? (schedule[index].duration * 60 - secondsLeft) / (schedule[index].duration * 60) : 0} isBreak={schedule[index]?.type !== 'focus'} isPaused={paused} />
 
       <div className="flex justify-center space-x-4">
         {!running ? (
