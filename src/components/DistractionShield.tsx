@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 interface DistractionShieldProps {
   timeLeft: number;
@@ -12,6 +12,8 @@ export const DistractionShield: React.FC<DistractionShieldProps> = ({
   onEscape,
   isBreak
 }) => {
+  const enteredFullscreen = useRef(false);
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -36,7 +38,7 @@ export const DistractionShield: React.FC<DistractionShieldProps> = ({
     document.addEventListener('keydown', handleKeyDownPrevent, true);
 
     const handleFullscreenChange = () => {
-      if (!document.fullscreenElement) {
+      if (enteredFullscreen.current && !document.fullscreenElement) {
         onEscape();
       }
     };
@@ -47,7 +49,14 @@ export const DistractionShield: React.FC<DistractionShieldProps> = ({
     document.body.tabIndex = -1;
     const elem = document.documentElement;
     if (elem.requestFullscreen) {
-      elem.requestFullscreen().catch(() => null);
+      elem
+        .requestFullscreen()
+        .then(() => {
+          enteredFullscreen.current = true;
+        })
+        .catch(() => {
+          enteredFullscreen.current = false;
+        });
     }
 
     return () => {
@@ -55,7 +64,7 @@ export const DistractionShield: React.FC<DistractionShieldProps> = ({
       document.removeEventListener('keydown', handleKeyDownPrevent, true);
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
       document.body.tabIndex = originalTabIndex;
-      if (document.fullscreenElement) {
+      if (enteredFullscreen.current && document.fullscreenElement) {
         document.exitFullscreen().catch(() => null);
       }
     };
