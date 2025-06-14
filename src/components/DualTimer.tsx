@@ -239,7 +239,7 @@ export const DualTimer: React.FC<DualTimerProps> = ({ onStateChange }) => {
   );
 
   return (
-    <Card className="max-w-md mx-auto p-8 space-y-8 border-none rounded-2xl shadow-lg bg-gradient-to-br from-card via-muted/50 to-background">
+    <Card className="p-8 w-full space-y-8 rounded-2xl shadow-lg bg-gradient-to-br from-card via-muted/50 to-background">
       <TimerDisplay
         timeLeft={secondsLeft}
         progress={schedule.length ? (schedule[index].duration * 60 - secondsLeft) / (schedule[index].duration * 60) : 0}

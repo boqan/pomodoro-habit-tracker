@@ -258,12 +258,12 @@ const SmartPomodoro = () => {
         </header>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
           {/* Timer Card */}
           <DualTimer onStateChange={(r, b) => {setDualRunning(r); setDualIsBreak(b);}} />
 
           {/* Tasks and Habits */}
-          <Card className="p-6 max-w-md mx-auto rounded-2xl shadow-lg bg-gradient-to-br from-card via-muted/50 to-background">
+          <Card className="p-6 w-full rounded-2xl shadow-lg bg-gradient-to-br from-card via-muted/50 to-background">
             <Tabs defaultValue="tasks" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="tasks">Tasks</TabsTrigger>
