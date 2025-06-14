@@ -31,6 +31,7 @@ const SmartPomodoro = () => {
   const [intent, setIntent] = useState('');
   const [shieldEnabled, setShieldEnabled] = useState(false);
   const [showShield, setShowShield] = useState(false);
+  const [enteredFullscreen, setEnteredFullscreen] = useState(false);
   const [showSessionComplete, setShowSessionComplete] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
@@ -91,6 +92,33 @@ const SmartPomodoro = () => {
     }
   }, [shieldEnabled, dualRunning]);
 
+  const handleShieldToggle = (enabled: boolean) => {
+    if (enabled) {
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) {
+        elem
+          .requestFullscreen()
+          .then(() => setEnteredFullscreen(true))
+          .catch(() => setEnteredFullscreen(false));
+      }
+      setShieldEnabled(true);
+    } else {
+      setShieldEnabled(false);
+      setShowShield(false);
+      if (enteredFullscreen && document.fullscreenElement) {
+        document.exitFullscreen().catch(() => null);
+      }
+      setEnteredFullscreen(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!showShield && enteredFullscreen && document.fullscreenElement) {
+      document.exitFullscreen().catch(() => null);
+      setEnteredFullscreen(false);
+    }
+  }, [showShield, enteredFullscreen]);
+
   const handleStart = () => {
     setShowIntentDialog(true);
   };
@@ -98,7 +126,7 @@ const SmartPomodoro = () => {
   const handleResume = () => {
     startTimer();
     if (shieldEnabled) {
-      setShowShield(true);
+      handleShieldToggle(true);
     }
   };
 
@@ -109,7 +137,7 @@ const SmartPomodoro = () => {
     startTimer();
     setSessionStarted(true);
     if (shieldEnabled) {
-      setShowShield(true);
+      handleShieldToggle(true);
     }
     addSession({
       start: new Date(),
@@ -126,7 +154,7 @@ const SmartPomodoro = () => {
     startTimer();
     setSessionStarted(true);
     if (shieldEnabled) {
-      setShowShield(true);
+      handleShieldToggle(true);
     }
     addSession({
       start: new Date(),
@@ -140,6 +168,9 @@ const SmartPomodoro = () => {
     stopTimer();
     switchToFocus();
     setShowShield(false);
+    if (shieldEnabled) {
+      handleShieldToggle(false);
+    }
     setSessionStarted(false);
     setCurrentCycle(1);
   };
@@ -148,6 +179,9 @@ const SmartPomodoro = () => {
     setShowShield(false);
     setShowSessionComplete(true);
     setSessionStarted(false);
+    if (shieldEnabled) {
+      handleShieldToggle(false);
+    }
     
     // Only award XP if the session was at least 1 minute long
     if (focusLength >= 1) {
@@ -218,7 +252,7 @@ const SmartPomodoro = () => {
           isBreak={dualIsBreak}
           onEscape={() => {
             setShowShield(false);
-            setShieldEnabled(false);
+            handleShieldToggle(false);
           }}
         />
       )}
@@ -269,7 +303,7 @@ const SmartPomodoro = () => {
               setDualSeconds(t);
             }}
             shieldEnabled={shieldEnabled}
-            onShieldToggle={setShieldEnabled}
+            onShieldToggle={handleShieldToggle}
           />
 
           {/* Tasks and Habits */}
