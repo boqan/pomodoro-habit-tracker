@@ -37,6 +37,7 @@ const SmartPomodoro = () => {
   const [sessionStarted, setSessionStarted] = useState(false);
   const [dualRunning, setDualRunning] = useState(false);
   const [dualIsBreak, setDualIsBreak] = useState(false);
+  const [dualSeconds, setDualSeconds] = useState(0);
 
   const { 
     timeLeft, 
@@ -81,14 +82,14 @@ const SmartPomodoro = () => {
     }
   }, [darkMode]);
 
-  // Show or hide the overlay when the shield toggle changes
+  // Show or hide the overlay when the shield toggle or running state changes
   useEffect(() => {
-    if (shieldEnabled) {
+    if (shieldEnabled && dualRunning) {
       setShowShield(true);
     } else {
       setShowShield(false);
     }
-  }, [shieldEnabled]);
+  }, [shieldEnabled, dualRunning]);
 
   const handleStart = () => {
     setShowIntentDialog(true);
@@ -213,7 +214,8 @@ const SmartPomodoro = () => {
 
       {showShield && (
         <DistractionShield
-          timeLeft={timeLeft}
+          timeLeft={dualSeconds}
+          isBreak={dualIsBreak}
           onEscape={() => {
             setShowShield(false);
             setShieldEnabled(false);
@@ -261,9 +263,10 @@ const SmartPomodoro = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
           {/* Timer Card */}
           <DualTimer
-            onStateChange={(r, b) => {
+            onStateChange={(r, b, t) => {
               setDualRunning(r);
               setDualIsBreak(b);
+              setDualSeconds(t);
             }}
             shieldEnabled={shieldEnabled}
             onShieldToggle={setShieldEnabled}

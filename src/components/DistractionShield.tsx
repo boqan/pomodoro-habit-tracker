@@ -4,11 +4,13 @@ import React, { useEffect } from 'react';
 interface DistractionShieldProps {
   timeLeft: number;
   onEscape: () => void;
+  isBreak: boolean;
 }
 
 export const DistractionShield: React.FC<DistractionShieldProps> = ({
   timeLeft,
-  onEscape
+  onEscape,
+  isBreak
 }) => {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -71,8 +73,12 @@ export const DistractionShield: React.FC<DistractionShieldProps> = ({
         <div className="text-8xl font-mono font-bold animate-pulse">
           {formatTime(timeLeft)}
         </div>
-        <h2 className="text-2xl font-semibold">🛡️ Focus Mode Active</h2>
-        <p className="text-lg text-gray-300">Stay focused on your task</p>
+        <h2 className="text-2xl font-semibold">
+          {isBreak ? 'Break Time' : '🛡️ Focus Mode Active'}
+        </h2>
+        <p className="text-lg text-gray-300">
+          {isBreak ? 'Relax and recharge' : 'Stay focused on your task'}
+        </p>
         <div className="text-sm text-gray-400 space-y-1">
           <p>Press ESC to exit distraction shield</p>
           <p className="text-xs opacity-75">

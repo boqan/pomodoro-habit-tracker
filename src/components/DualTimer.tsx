@@ -125,7 +125,7 @@ function renderScheduleSummary(
 }
 
 interface DualTimerProps {
-  onStateChange?: (running: boolean, isBreak: boolean) => void;
+  onStateChange?: (running: boolean, isBreak: boolean, timeLeft: number) => void;
   shieldEnabled: boolean;
   onShieldToggle: (enabled: boolean) => void;
 }
@@ -180,10 +180,10 @@ export const DualTimer: React.FC<DualTimerProps> = ({ onStateChange, shieldEnabl
   const [paused, setPaused] = useState(false);
   const settingsVisible = !running && !paused;
 
-  // notify parent when running state or segment changes
+  // notify parent when running state, segment, or remaining time changes
   useEffect(() => {
-    onStateChange?.(running, schedule[index]?.type !== 'focus');
-  }, [onStateChange, running, index, schedule]);
+    onStateChange?.(running, schedule[index]?.type !== 'focus', secondsLeft);
+  }, [onStateChange, running, index, secondsLeft, schedule]);
 
   const handleSegmentEnd = React.useCallback(() => {
     if (index + 1 < schedule.length) {
