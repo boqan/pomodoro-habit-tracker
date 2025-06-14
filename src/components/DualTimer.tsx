@@ -126,9 +126,11 @@ function renderScheduleSummary(
 
 interface DualTimerProps {
   onStateChange?: (running: boolean, isBreak: boolean) => void;
+  shieldEnabled: boolean;
+  onShieldToggle: (enabled: boolean) => void;
 }
 
-export const DualTimer: React.FC<DualTimerProps> = ({ onStateChange }) => {
+export const DualTimer: React.FC<DualTimerProps> = ({ onStateChange, shieldEnabled, onShieldToggle }) => {
   const [mode, setMode] = useState<'regular' | 'pomodoro'>('regular');
   const [regularMinutes, setRegularMinutes] = useState(25);
   const [totalMinutes, setTotalMinutes] = useState(60);
@@ -142,7 +144,6 @@ export const DualTimer: React.FC<DualTimerProps> = ({ onStateChange }) => {
   const [longChoice, setLongChoice] = useState<'15' | '30' | 'custom'>('15');
   const [customLong, setCustomLong] = useState(15);
   const [showSettings, setShowSettings] = useState(false);
-  const [shieldEnabled, setShieldEnabled] = useState(false);
 
   const effectiveLongBreak = longChoice === 'custom' ? customLong : parseInt(longChoice, 10);
 
@@ -326,7 +327,7 @@ export const DualTimer: React.FC<DualTimerProps> = ({ onStateChange }) => {
 
       {!settingsVisible && (
         <div className="flex items-center justify-center space-x-2 transition-opacity duration-500">
-          <Switch id="shield" checked={shieldEnabled} onCheckedChange={setShieldEnabled} />
+          <Switch id="shield" checked={shieldEnabled} onCheckedChange={onShieldToggle} />
           <Label htmlFor="shield">Distraction Shield</Label>
         </div>
       )}
