@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -41,6 +41,15 @@ function computeSchedule(
     focusAccum += work;
 
     if (remaining <= 0) break;
+
+    // Only add a break if there's enough remaining focus time to make it worthwhile
+    // (at least half a focus block remaining)
+    if (remaining < focusLen * 0.5) {
+      // Extend the current focus block with remaining time instead of adding a break
+      schedule[schedule.length - 1].duration += remaining;
+      remaining = 0;
+      break;
+    }
 
     let breakLen = shortBreak;
     const isLongBreak = focusAccum >= 120;
@@ -142,6 +151,50 @@ export const DualTimer: React.FC<DualTimerProps> = ({ onStateChange, shieldEnabl
   const [regularMinutes, setRegularMinutes] = useState(25);
   const [totalMinutes, setTotalMinutes] = useState(60);
 
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const endRef = useRef<number | null>(null);
+  const timerId = useRef<number | null>(null);
+
+  const getAudioCtx = () => {
+    if (!audioCtxRef.current) {
+      const win = window as unknown as { webkitAudioContext?: typeof AudioContext };
+      const Ctx = (window.AudioContext || win.webkitAudioContext) as typeof AudioContext;
+      audioCtxRef.current = new Ctx();
+    }
+    return audioCtxRef.current!;
+  };
+
+  const playTone = (freq: number, startOffset = 0) => {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    const start = ctx.currentTime + startOffset;
+    gain.gain.setValueAtTime(0.001, start);
+    gain.gain.exponentialRampToValueAtTime(0.15, start + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, start + 0.18);
+    osc.start(start);
+    osc.stop(start + 0.18);
+  };
+
+  const playFocusStart = () => {
+    const ctx = getAudioCtx();
+    ctx.resume();
+    playTone(660);
+    playTone(880, 0.25);
+  };
+
+  const playFocusEnd = () => {
+    const ctx = getAudioCtx();
+    ctx.resume();
+    playTone(440);
+    playTone(330, 0.25);
+    playTone(220, 0.5);
+  };
+
   const [method, setMethod] = useState<'classic' | '50' | '60' | 'custom'>('classic');
   const [focusLen, setFocusLen] = useState(25);
   const [shortBreak, setShortBreak] = useState(5);
@@ -191,39 +244,69 @@ export const DualTimer: React.FC<DualTimerProps> = ({ onStateChange, shieldEnabl
   const handleSegmentEnd = React.useCallback(() => {
     if (index + 1 < schedule.length) {
       const next = index + 1;
+      const current = schedule[index];
+      if (current.type === 'focus') {
+        playFocusEnd();
+      }
       setIndex(next);
       setSecondsLeft(schedule[next].duration * 60);
+      endRef.current = Date.now() + schedule[next].duration * 60 * 1000;
+      if (schedule[next].type === 'focus' && mode === 'pomodoro') {
+        playFocusStart();
+      }
     } else {
+      if (schedule[index].type === 'focus') {
+        playFocusEnd();
+      }
       setRunning(false);
     }
-  }, [index, schedule]);
+  }, [index, schedule, mode]);
       
   useEffect(() => {
     if (!running) return;
-    const id = window.setInterval(() => {
-      setSecondsLeft((s) => (s > 0 ? s - 1 : 0));
-    }, 1000);
-    return () => clearInterval(id);
-  }, [running, index]);
-
-  useEffect(() => {
-    if (running && secondsLeft === 0) {
-      handleSegmentEnd();
-    }
-  }, [secondsLeft, running, handleSegmentEnd]);
+    const tick = () => {
+      if (!endRef.current) return;
+      const diff = Math.max(0, Math.ceil((endRef.current - Date.now()) / 1000));
+      setSecondsLeft(diff);
+      if (diff <= 0) {
+        handleSegmentEnd();
+      } else {
+        timerId.current = window.setTimeout(tick, 500);
+      }
+    };
+    timerId.current = window.setTimeout(tick, 0);
+    return () => {
+      if (timerId.current) {
+        clearTimeout(timerId.current);
+        timerId.current = null;
+      }
+    };
+  }, [running, handleSegmentEnd]);
 
   const start = () => {
     if (!schedule.length) return;
     setIndex(0);
     setSecondsLeft(schedule[0].duration * 60);
+    endRef.current = Date.now() + schedule[0].duration * 60 * 1000;
+    getAudioCtx().resume();
+    if (schedule[0].type === 'focus' && mode === 'pomodoro') {
+      playFocusStart();
+    }
     setRunning(true);
     setPaused(false);
   };
   const pause = () => {
     setRunning(false);
     setPaused(true);
+    if (secondsLeft > 0) {
+      endRef.current = Date.now() + secondsLeft * 1000;
+    }
   };
   const resume = () => {
+    getAudioCtx().resume();
+    if (secondsLeft > 0) {
+      endRef.current = Date.now() + secondsLeft * 1000;
+    }
     setRunning(true);
     setPaused(false);
   };
@@ -232,6 +315,7 @@ export const DualTimer: React.FC<DualTimerProps> = ({ onStateChange, shieldEnabl
     setPaused(false);
     setIndex(0);
     setSecondsLeft(0);
+    endRef.current = null;
   };
 
   const summary = React.useMemo(() => summarizeSchedule(schedule, focusLen), [schedule, focusLen]);
