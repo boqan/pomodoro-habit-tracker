@@ -62,7 +62,7 @@ export const DistractionShield: React.FC<DistractionShieldProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center relative">
+    <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-[110] flex items-center justify-center">
       <div className="text-center text-white space-y-4">
         <div className="text-8xl font-mono font-bold animate-pulse">
           {formatTime(timeLeft)}
