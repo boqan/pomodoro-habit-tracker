@@ -31,10 +31,14 @@ const SmartPomodoro = () => {
   const [intent, setIntent] = useState('');
   const [shieldEnabled, setShieldEnabled] = useState(false);
   const [showShield, setShowShield] = useState(false);
+  const [enteredFullscreen, setEnteredFullscreen] = useState(false);
   const [showSessionComplete, setShowSessionComplete] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
   const [sessionStarted, setSessionStarted] = useState(false);
+  const [dualRunning, setDualRunning] = useState(false);
+  const [dualIsBreak, setDualIsBreak] = useState(false);
+  const [dualSeconds, setDualSeconds] = useState(0);
 
   const { 
     timeLeft, 
@@ -79,14 +83,41 @@ const SmartPomodoro = () => {
     }
   }, [darkMode]);
 
-  // Show or hide the overlay when the shield toggle changes
+  // Show or hide the overlay when the shield toggle or running state changes
   useEffect(() => {
-    if (shieldEnabled) {
+    if (shieldEnabled && dualRunning) {
       setShowShield(true);
     } else {
       setShowShield(false);
     }
-  }, [shieldEnabled]);
+  }, [shieldEnabled, dualRunning]);
+
+  const handleShieldToggle = (enabled: boolean) => {
+    if (enabled) {
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) {
+        elem
+          .requestFullscreen()
+          .then(() => setEnteredFullscreen(true))
+          .catch(() => setEnteredFullscreen(false));
+      }
+      setShieldEnabled(true);
+    } else {
+      setShieldEnabled(false);
+      setShowShield(false);
+      if (enteredFullscreen && document.fullscreenElement) {
+        document.exitFullscreen().catch(() => null);
+      }
+      setEnteredFullscreen(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!showShield && enteredFullscreen && document.fullscreenElement) {
+      document.exitFullscreen().catch(() => null);
+      setEnteredFullscreen(false);
+    }
+  }, [showShield, enteredFullscreen]);
 
   const handleStart = () => {
     setShowIntentDialog(true);
@@ -95,7 +126,7 @@ const SmartPomodoro = () => {
   const handleResume = () => {
     startTimer();
     if (shieldEnabled) {
-      setShowShield(true);
+      handleShieldToggle(true);
     }
   };
 
@@ -106,7 +137,7 @@ const SmartPomodoro = () => {
     startTimer();
     setSessionStarted(true);
     if (shieldEnabled) {
-      setShowShield(true);
+      handleShieldToggle(true);
     }
     addSession({
       start: new Date(),
@@ -123,7 +154,7 @@ const SmartPomodoro = () => {
     startTimer();
     setSessionStarted(true);
     if (shieldEnabled) {
-      setShowShield(true);
+      handleShieldToggle(true);
     }
     addSession({
       start: new Date(),
@@ -137,6 +168,9 @@ const SmartPomodoro = () => {
     stopTimer();
     switchToFocus();
     setShowShield(false);
+    if (shieldEnabled) {
+      handleShieldToggle(false);
+    }
     setSessionStarted(false);
     setCurrentCycle(1);
   };
@@ -145,6 +179,9 @@ const SmartPomodoro = () => {
     setShowShield(false);
     setShowSessionComplete(true);
     setSessionStarted(false);
+    if (shieldEnabled) {
+      handleShieldToggle(false);
+    }
     
     // Only award XP if the session was at least 1 minute long
     if (focusLength >= 1) {
@@ -211,10 +248,11 @@ const SmartPomodoro = () => {
 
       {showShield && (
         <DistractionShield
-          timeLeft={timeLeft}
+          timeLeft={dualSeconds}
+          isBreak={dualIsBreak}
           onEscape={() => {
             setShowShield(false);
-            setShieldEnabled(false);
+            handleShieldToggle(false);
           }}
         />
       )}
@@ -256,12 +294,20 @@ const SmartPomodoro = () => {
         </header>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
           {/* Timer Card */}
-          <DualTimer />
+          <DualTimer
+            onStateChange={(r, b, t) => {
+              setDualRunning(r);
+              setDualIsBreak(b);
+              setDualSeconds(t);
+            }}
+            shieldEnabled={shieldEnabled}
+            onShieldToggle={handleShieldToggle}
+          />
 
           {/* Tasks and Habits */}
-          <Card className="p-6">
+          <Card className="p-6 w-full rounded-2xl shadow-lg bg-gradient-to-br from-card via-muted/50 to-background">
             <Tabs defaultValue="tasks" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="tasks">Tasks</TabsTrigger>
@@ -289,8 +335,8 @@ const SmartPomodoro = () => {
         </div>
 
         {/* Distraction Log - only show when timer is running */}
-        <div className="my-8 w-full lg:w-1/2 mx-auto">
-          <DistractionLog visible={isRunning && !isBreak} />
+        <div className="my-6 w-full lg:w-1/2 mx-auto">
+          <DistractionLog visible={dualRunning && !dualIsBreak} />
         </div>
       </div>
 
