@@ -1,5 +1,6 @@
 
 import React, { useEffect } from 'react';
+import { DistractionLog } from './DistractionLog';
 
 interface DistractionShieldProps {
   timeLeft: number;
@@ -61,7 +62,7 @@ export const DistractionShield: React.FC<DistractionShieldProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center">
+    <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center relative">
       <div className="text-center text-white space-y-4">
         <div className="text-8xl font-mono font-bold animate-pulse">
           {formatTime(timeLeft)}
@@ -78,6 +79,9 @@ export const DistractionShield: React.FC<DistractionShieldProps> = ({
             (Shield blocks shortcuts and tab switching - works best in full browser)
           </p>
         </div>
+      </div>
+      <div className="absolute bottom-6 right-6 max-w-sm w-full">
+        <DistractionLog visible={!isBreak} />
       </div>
     </div>
   );
