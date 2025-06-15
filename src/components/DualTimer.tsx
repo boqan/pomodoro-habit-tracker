@@ -42,6 +42,15 @@ function computeSchedule(
 
     if (remaining <= 0) break;
 
+    // Only add a break if there's enough remaining focus time to make it worthwhile
+    // (at least half a focus block remaining)
+    if (remaining < focusLen * 0.5) {
+      // Extend the current focus block with remaining time instead of adding a break
+      schedule[schedule.length - 1].duration += remaining;
+      remaining = 0;
+      break;
+    }
+
     let breakLen = shortBreak;
     const isLongBreak = focusAccum >= 120;
     if (isLongBreak) {
