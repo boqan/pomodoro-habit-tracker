@@ -32,23 +32,30 @@ function computeSchedule(
 
   const schedule: Segment[] = [];
   let remaining = total;
-  let focusAccum = 0;
+  let elapsed = 0; // elapsed time since last long break (focus + short breaks)
 
   while (remaining > 0) {
+    // insert long break if two hours have elapsed since the last one
+    if (elapsed >= 120) {
+      schedule.push({ type: 'longBreak', duration: longBreak });
+      elapsed = 0;
+    }
+
     const work = Math.min(focusLen, remaining);
     schedule.push({ type: 'focus', duration: work });
     remaining -= work;
-    focusAccum += work;
+    elapsed += work;
 
     if (remaining <= 0) break;
 
     let breakLen = shortBreak;
-    if (focusAccum >= 120) {
+    if (elapsed >= 120) {
       breakLen = longBreak;
-      focusAccum = 0;
+      elapsed = 0;
     }
 
     schedule.push({ type: breakLen === longBreak ? 'longBreak' : 'break', duration: breakLen });
+    elapsed += breakLen;
   }
 
   const hasLongBreak = schedule.some((s) => s.type === 'longBreak');
