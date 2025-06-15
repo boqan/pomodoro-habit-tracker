@@ -24,44 +24,33 @@ function computeSchedule(
   total: number,
   focusLen: number,
   shortBreak: number,
-  longBreak: number,
-  interval: number
+  longBreak: number
 ): Segment[] {
   focusLen = Math.max(1, focusLen);
   shortBreak = Math.max(1, shortBreak);
   longBreak = Math.max(1, longBreak);
-  interval = Math.max(1, interval);
 
   const schedule: Segment[] = [];
-  let minutes = total;
-  let cycle = 0;
-  let timeElapsed = 0;
-  let nextLongMark = 120;
+  let remaining = total;
+  let focusAccum = 0;
 
-  while (minutes >= focusLen) {
-    schedule.push({ type: 'focus', duration: focusLen });
-    minutes -= focusLen;
-    timeElapsed += focusLen;
-    cycle++;
+  while (remaining > 0) {
+    const work = Math.min(focusLen, remaining);
+    schedule.push({ type: 'focus', duration: work });
+    remaining -= work;
+    focusAccum += work;
 
-    if (minutes <= 0) break;
+    if (remaining <= 0) break;
 
     let breakLen = shortBreak;
-    if (cycle % interval === 0) breakLen = longBreak;
-    if (timeElapsed >= nextLongMark) {
+    if (focusAccum >= 120) {
       breakLen = longBreak;
-      nextLongMark += 120;
+      focusAccum = 0;
     }
 
-    if (minutes < breakLen) break;
     schedule.push({ type: breakLen === longBreak ? 'longBreak' : 'break', duration: breakLen });
-    minutes -= breakLen;
-    timeElapsed += breakLen;
   }
 
-  if (minutes >= focusLen / 2) {
-    schedule.push({ type: 'focus', duration: minutes });
-  }
   const hasLongBreak = schedule.some((s) => s.type === 'longBreak');
   if (!hasLongBreak && total >= 120) {
     schedule.push({ type: 'longBreak', duration: longBreak });
@@ -144,7 +133,6 @@ export const DualTimer: React.FC<DualTimerProps> = ({ onStateChange, shieldEnabl
   const [focusLen, setFocusLen] = useState(25);
   const [shortBreak, setShortBreak] = useState(5);
   const [longBreak, setLongBreak] = useState(15);
-  const [interval, setIntervalCount] = useState(4);
 
   const [longChoice, setLongChoice] = useState<'15' | '30' | 'custom'>('15');
   const [customLong, setCustomLong] = useState(15);
@@ -157,26 +145,23 @@ export const DualTimer: React.FC<DualTimerProps> = ({ onStateChange, shieldEnabl
       setFocusLen(25);
       setShortBreak(5);
       setLongBreak(15);
-      setIntervalCount(4);
     } else if (method === '50') {
       setFocusLen(50);
       setShortBreak(10);
       setLongBreak(15);
-      setIntervalCount(3);
     } else if (method === '60') {
       setFocusLen(60);
       setShortBreak(15);
       setLongBreak(20);
-      setIntervalCount(2);
     }
   }, [method]);
 
   const schedule: Segment[] = React.useMemo(
     () =>
       mode === 'pomodoro'
-        ? computeSchedule(totalMinutes, focusLen, shortBreak, effectiveLongBreak, interval)
+        ? computeSchedule(totalMinutes, focusLen, shortBreak, effectiveLongBreak)
         : [{ type: 'focus', duration: regularMinutes }],
-    [mode, totalMinutes, focusLen, shortBreak, effectiveLongBreak, interval, regularMinutes]
+    [mode, totalMinutes, focusLen, shortBreak, effectiveLongBreak, regularMinutes]
   );
 
   const [index, setIndex] = useState(0);
@@ -298,14 +283,12 @@ export const DualTimer: React.FC<DualTimerProps> = ({ onStateChange, shieldEnabl
                     <Label htmlFor="break">Break</Label>
                     <Input id="break" type="number" min={1} className="w-16" value={shortBreak} onChange={e => setShortBreak(Math.max(1, Number(e.target.value)))} />
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Label htmlFor="long">Long Break</Label>
-                    <Input id="long" type="number" min={1} className="w-16" value={longBreak} onChange={e => setLongBreak(Math.max(1, Number(e.target.value)))} />
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Label htmlFor="interval">Blocks before long break</Label>
-                    <Input id="interval" type="number" min={1} className="w-16" value={interval} onChange={e => setIntervalCount(Math.max(1, Number(e.target.value)))} />
-                  </div>
+                  {totalMinutes >= 120 && (
+                    <div className="flex items-center space-x-2">
+                      <Label htmlFor="long">Long Break</Label>
+                      <Input id="long" type="number" min={1} className="w-16" value={longBreak} onChange={e => setLongBreak(Math.max(1, Number(e.target.value)))} />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
