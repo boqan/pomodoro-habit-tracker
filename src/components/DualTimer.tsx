@@ -43,12 +43,17 @@ function computeSchedule(
     if (remaining <= 0) break;
 
     let breakLen = shortBreak;
-    if (focusAccum >= 120) {
+    const isLongBreak = focusAccum >= 120;
+    if (isLongBreak) {
       breakLen = longBreak;
-      focusAccum = 0;
     }
 
-    schedule.push({ type: breakLen === longBreak ? 'longBreak' : 'break', duration: breakLen });
+    schedule.push({ type: isLongBreak ? 'longBreak' : 'break', duration: breakLen });
+    
+    // Reset focus accumulator after long break is added to schedule
+    if (isLongBreak) {
+      focusAccum = 0;
+    }
   }
 
   const hasLongBreak = schedule.some((s) => s.type === 'longBreak');
@@ -94,6 +99,14 @@ function renderScheduleSummary(
   longBreak: number
 ) {
   const lines: string[] = [];
+
+  // Calculate total session duration
+  const totalFocusTime = summary.workBlocks * focusLen + (summary.partialFocus || 0);
+  const totalBreakTime = summary.shortBreaks * shortBreak + summary.longBreaks * longBreak;
+  const totalSessionTime = totalFocusTime + totalBreakTime;
+
+  // Add total session duration at the top
+  lines.push(`Total session: ${totalSessionTime} min`);
 
   if (summary.workBlocks > 0) {
     lines.push(`Work blocks: ${summary.workBlocks} × ${focusLen} min`);
@@ -249,7 +262,7 @@ export const DualTimer: React.FC<DualTimerProps> = ({ onStateChange, shieldEnabl
               </div>
             ) : (
               <div className="flex items-center space-x-2">
-                <Label htmlFor="total" className="text-foreground">Total focus window, min</Label>
+                <Label htmlFor="total" className="text-foreground">Total focus time, min (breaks added automatically)</Label>
                 <Input id="total" type="number" min={1} className="w-24" value={totalMinutes} onChange={e => setTotalMinutes(Math.max(1, Number(e.target.value)))} />
               </div>
             )}
