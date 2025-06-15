@@ -27,6 +27,11 @@ function computeSchedule(
   longBreak: number,
   interval: number
 ): Segment[] {
+  focusLen = Math.max(1, focusLen);
+  shortBreak = Math.max(1, shortBreak);
+  longBreak = Math.max(1, longBreak);
+  interval = Math.max(1, interval);
+
   const schedule: Segment[] = [];
   let minutes = total;
   let cycle = 0;
@@ -190,7 +195,6 @@ export const DualTimer: React.FC<DualTimerProps> = ({ onStateChange, shieldEnabl
       const next = index + 1;
       setIndex(next);
       setSecondsLeft(schedule[next].duration * 60);
-      setRunning(true);
     } else {
       setRunning(false);
     }
@@ -199,17 +203,16 @@ export const DualTimer: React.FC<DualTimerProps> = ({ onStateChange, shieldEnabl
   useEffect(() => {
     if (!running) return;
     const id = window.setInterval(() => {
-      setSecondsLeft((s) => {
-        if (s <= 1) {
-          clearInterval(id);
-          handleSegmentEnd();
-          return 0;
-        }
-        return s - 1;
-      });
+      setSecondsLeft((s) => (s > 0 ? s - 1 : 0));
     }, 1000);
     return () => clearInterval(id);
-  }, [running, handleSegmentEnd]);
+  }, [running, index]);
+
+  useEffect(() => {
+    if (running && secondsLeft === 0) {
+      handleSegmentEnd();
+    }
+  }, [secondsLeft, running, handleSegmentEnd]);
 
   const start = () => {
     if (!schedule.length) return;
@@ -257,12 +260,12 @@ export const DualTimer: React.FC<DualTimerProps> = ({ onStateChange, shieldEnabl
             {mode === 'regular' ? (
               <div className="flex items-center space-x-2">
                 <Label htmlFor="regular" className="text-foreground">Minutes</Label>
-                <Input id="regular" type="number" className="w-24" value={regularMinutes} onChange={e => setRegularMinutes(Number(e.target.value))} />
+                <Input id="regular" type="number" min={1} className="w-24" value={regularMinutes} onChange={e => setRegularMinutes(Math.max(1, Number(e.target.value)))} />
               </div>
             ) : (
               <div className="flex items-center space-x-2">
                 <Label htmlFor="total" className="text-foreground">Total focus window, min</Label>
-                <Input id="total" type="number" className="w-24" value={totalMinutes} onChange={e => setTotalMinutes(Number(e.target.value))} />
+                <Input id="total" type="number" min={1} className="w-24" value={totalMinutes} onChange={e => setTotalMinutes(Math.max(1, Number(e.target.value)))} />
               </div>
             )}
           </div>
@@ -289,19 +292,19 @@ export const DualTimer: React.FC<DualTimerProps> = ({ onStateChange, shieldEnabl
                 <div className="grid grid-cols-2 gap-2">
                   <div className="flex items-center space-x-2">
                     <Label htmlFor="focus">Focus</Label>
-                    <Input id="focus" type="number" className="w-16" value={focusLen} onChange={e => setFocusLen(Number(e.target.value))} />
+                    <Input id="focus" type="number" min={1} className="w-16" value={focusLen} onChange={e => setFocusLen(Math.max(1, Number(e.target.value)))} />
                   </div>
                   <div className="flex items-center space-x-2">
                     <Label htmlFor="break">Break</Label>
-                    <Input id="break" type="number" className="w-16" value={shortBreak} onChange={e => setShortBreak(Number(e.target.value))} />
+                    <Input id="break" type="number" min={1} className="w-16" value={shortBreak} onChange={e => setShortBreak(Math.max(1, Number(e.target.value)))} />
                   </div>
                   <div className="flex items-center space-x-2">
                     <Label htmlFor="long">Long Break</Label>
-                    <Input id="long" type="number" className="w-16" value={longBreak} onChange={e => setLongBreak(Number(e.target.value))} />
+                    <Input id="long" type="number" min={1} className="w-16" value={longBreak} onChange={e => setLongBreak(Math.max(1, Number(e.target.value)))} />
                   </div>
                   <div className="flex items-center space-x-2">
                     <Label htmlFor="interval">Blocks before long break</Label>
-                    <Input id="interval" type="number" className="w-16" value={interval} onChange={e => setIntervalCount(Number(e.target.value))} />
+                    <Input id="interval" type="number" min={1} className="w-16" value={interval} onChange={e => setIntervalCount(Math.max(1, Number(e.target.value)))} />
                   </div>
                 </div>
               )}
@@ -314,7 +317,7 @@ export const DualTimer: React.FC<DualTimerProps> = ({ onStateChange, shieldEnabl
                 <ToggleGroupItem value="15">15 min</ToggleGroupItem>
                 <ToggleGroupItem value="30">30 min</ToggleGroupItem>
           <ToggleGroupItem value="custom" className="px-2">
-            <Input type="number" className="w-12" value={customLong} onChange={e => setCustomLong(Number(e.target.value))} />
+            <Input type="number" min={1} className="w-12" value={customLong} onChange={e => setCustomLong(Math.max(1, Number(e.target.value)))} />
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
