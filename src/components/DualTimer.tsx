@@ -31,33 +31,34 @@ function computeSchedule(
   longBreak = Math.max(1, longBreak);
 
   const schedule: Segment[] = [];
-  let remaining = total;
-  let elapsed = 0; // elapsed time since last long break (focus + short breaks)
+  let minutes = total;
+  let focusAccum = 0;
 
-  while (remaining > 0) {
-    // insert long break if two hours have elapsed since the last one
-    if (elapsed >= 120) {
-      schedule.push({ type: 'longBreak', duration: longBreak });
-      elapsed = 0;
-    }
+  while (minutes >= focusLen) {
+    schedule.push({ type: 'focus', duration: focusLen });
+    minutes -= focusLen;
+    focusAccum += focusLen;
 
-    const work = Math.min(focusLen, remaining);
-    schedule.push({ type: 'focus', duration: work });
-    remaining -= work;
-    elapsed += work;
-
-    if (remaining <= 0) break;
+    if (minutes <= 0) break;
 
     let breakLen = shortBreak;
-    if (elapsed >= 120) {
+    const isLongBreak = focusAccum >= 120;
+    if (isLongBreak) {
       breakLen = longBreak;
-      elapsed = 0;
     }
 
-    schedule.push({ type: breakLen === longBreak ? 'longBreak' : 'break', duration: breakLen });
-    elapsed += breakLen;
+    if (minutes < breakLen) break;
+    schedule.push({ type: isLongBreak ? 'longBreak' : 'break', duration: breakLen });
+    minutes -= breakLen;
+
+    if (isLongBreak) {
+      focusAccum = 0;
+    }
   }
 
+  if (minutes >= focusLen / 2) {
+    schedule.push({ type: 'focus', duration: minutes });
+  }
   const hasLongBreak = schedule.some((s) => s.type === 'longBreak');
   if (!hasLongBreak && total >= 120) {
     schedule.push({ type: 'longBreak', duration: longBreak });
@@ -191,7 +192,7 @@ export const DualTimer: React.FC<DualTimerProps> = ({ onStateChange, shieldEnabl
       setRunning(false);
     }
   }, [index, schedule]);
-      
+
   useEffect(() => {
     if (!running) return;
     const id = window.setInterval(() => {
@@ -290,12 +291,10 @@ export const DualTimer: React.FC<DualTimerProps> = ({ onStateChange, shieldEnabl
                     <Label htmlFor="break">Break</Label>
                     <Input id="break" type="number" min={1} className="w-16" value={shortBreak} onChange={e => setShortBreak(Math.max(1, Number(e.target.value)))} />
                   </div>
-                  {totalMinutes >= 120 && (
-                    <div className="flex items-center space-x-2">
-                      <Label htmlFor="long">Long Break</Label>
-                      <Input id="long" type="number" min={1} className="w-16" value={longBreak} onChange={e => setLongBreak(Math.max(1, Number(e.target.value)))} />
-                    </div>
-                  )}
+                  <div className="flex items-center space-x-2">
+                    <Label htmlFor="long">Long Break</Label>
+                    <Input id="long" type="number" min={1} className="w-16" value={longBreak} onChange={e => setLongBreak(Math.max(1, Number(e.target.value)))} />
+                  </div>
                 </div>
               )}
             </div>
