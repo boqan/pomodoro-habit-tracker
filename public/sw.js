@@ -8,6 +8,13 @@ self.addEventListener('install', event => {
   );
 });
 
+// Activate new service worker as soon as it's finished installing
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames =>
