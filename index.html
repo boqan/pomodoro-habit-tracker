@@ -9,13 +9,13 @@
     <meta name="keywords" content="pomodoro, timer, productivity, focus, anti-procrastination, habits, tasks, PWA" />
     
     <!-- Canonical URL -->
-    <link rel="canonical" href="https://smart-pomodoro.app/" />
+    <link rel="canonical" href="https://bogan.github.io/pomodoro-habit-tracker/" />
 
     <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.json" />
+    <link rel="manifest" href="/pomodoro-habit-tracker/manifest.json" />
     
     <!-- Favicon -->
-    <link rel="icon" href="/logo.png" type="image/png" />
+    <link rel="icon" href="/pomodoro-habit-tracker/logo.png" type="image/png" />
     
     <!-- Theme colors -->
     <meta name="theme-color" content="#2563eb" />
@@ -30,14 +30,14 @@
     <meta property="og:title" content="Smart Pomodoro 2.0 - Anti-Procrastination Timer" />
     <meta property="og:description" content="Boost productivity with Smart Pomodoro 2.0 - featuring anti-procrastination hacks, task management, habit tracking, and gamification." />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://smart-pomodoro.app/" />
-    <meta property="og:image" content="https://smart-pomodoro.app/og-image.png" />
+    <meta property="og:url" content="https://bogan.github.io/pomodoro-habit-tracker/" />
+    <meta property="og:image" content="https://bogan.github.io/pomodoro-habit-tracker/og-image.png" />
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Smart Pomodoro 2.0 - Anti-Procrastination Timer" />
     <meta name="twitter:description" content="Boost productivity with Smart Pomodoro 2.0 - featuring anti-procrastination hacks, task management, habit tracking, and gamification." />
-    <meta name="twitter:image" content="https://smart-pomodoro.app/twitter-image.png" />
+    <meta name="twitter:image" content="https://bogan.github.io/pomodoro-habit-tracker/twitter-image.png" />
 
     <script type="application/ld+json">
       {
@@ -47,8 +47,8 @@
         "operatingSystem": "Browser",
         "applicationCategory": "Productivity",
         "description": "Boost productivity with Smart Pomodoro 2.0 - featuring anti-procrastination hacks, task management, habit tracking, and gamification.",
-        "url": "https://smart-pomodoro.app/",
-        "image": "https://smart-pomodoro.app/og-image.png"
+        "url": "https://bogan.github.io/pomodoro-habit-tracker/",
+        "image": "https://bogan.github.io/pomodoro-habit-tracker/og-image.png"
       }
     </script>
   </head>
@@ -59,7 +59,7 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').then(registration => {
+          navigator.serviceWorker.register('/pomodoro-habit-tracker/sw.js').then(registration => {
             registration.addEventListener('updatefound', () => {
               const newWorker = registration.installing;
               newWorker.addEventListener('statechange', () => {

@@ -1,5 +1,5 @@
-const CACHE_NAME = 'smart-pomodoro-v1.1.0';
-const OFFLINE_URL = '/offline.html';
+const CACHE_NAME = 'smart-pomodoro-v1.2.0';
+const OFFLINE_URL = '/pomodoro-habit-tracker/offline.html';
 
 self.addEventListener('install', event => {
   self.skipWaiting();
