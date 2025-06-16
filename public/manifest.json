@@ -1,9 +1,8 @@
-
 {
   "name": "Smart Pomodoro 2.0 - Anti-Procrastination Edition",
   "short_name": "Smart Pomodoro",
   "description": "A feature-rich Pomodoro timer with anti-procrastination hacks, task management, and habit tracking",
-  "start_url": "/",
+  "start_url": "/pomodoro-habit-tracker/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2563eb",
