@@ -9,13 +9,13 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "/pomodoro-habit-tracker/icon-192.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any maskable"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/pomodoro-habit-tracker/icon-512.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any maskable"
@@ -24,13 +24,13 @@
   "categories": ["productivity", "utilities", "lifestyle"],
   "screenshots": [
     {
-      "src": "/screenshot-wide.png",
+      "src": "/pomodoro-habit-tracker/screenshot-wide.png",
       "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide"
     },
     {
-      "src": "/screenshot-narrow.png", 
+      "src": "/pomodoro-habit-tracker/screenshot-narrow.png", 
       "sizes": "375x812",
       "type": "image/png",
       "form_factor": "narrow"
