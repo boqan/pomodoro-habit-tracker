@@ -262,7 +262,11 @@ const SmartPomodoro = () => {
         <header className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <img src="/logo.png" alt="Smart Pomodoro logo" className="h-8 w-8" />
+              <img
+                src={`${import.meta.env.BASE_URL}logo.png`}
+                alt="Smart Pomodoro logo"
+                className="h-8 w-8"
+              />
               <h1 className="text-3xl font-bold text-foreground">Smart Pomodoro 2.0</h1>
             </div>
             <Badge variant="secondary" className="flex items-center space-x-1">

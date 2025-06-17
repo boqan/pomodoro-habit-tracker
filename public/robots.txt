@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://smart-pomodoro.app/sitemap.xml
+Sitemap: https://boqan.github.io/pomodoro-habit-tracker/sitemap.xml
