@@ -5,7 +5,8 @@ export const useTimer = (focusDuration: number, breakDuration: number) => {
   const [isRunning, setIsRunning] = useState(false);
   const [isBreak, setIsBreak] = useState(false);
   const [sessionDuration, setSessionDuration] = useState(focusDuration);
-  const intervalRef = useRef<number | null>(null);
+  const timerRef = useRef<number | null>(null);
+  const endTimeRef = useRef<number | null>(null);
   const pausedTimeRef = useRef<number | null>(null);
 
   // Add isPaused state for UI
@@ -14,16 +15,26 @@ export const useTimer = (focusDuration: number, breakDuration: number) => {
   const progress = sessionDuration > 0 ? (sessionDuration - timeLeft) / sessionDuration : 0;
 
   const startTimer = useCallback(() => {
-    if (pausedTimeRef.current !== null) {
-      setTimeLeft(pausedTimeRef.current);
-      pausedTimeRef.current = null;
-    }
+    const current = pausedTimeRef.current ?? timeLeft;
+    endTimeRef.current = Date.now() + current * 1000;
+    setTimeLeft(current);
+    pausedTimeRef.current = null;
     setIsRunning(true);
-  }, []);
+  }, [timeLeft]);
 
   const pauseTimer = useCallback(() => {
     setIsRunning(false);
-    pausedTimeRef.current = timeLeft;
+    if (endTimeRef.current) {
+      const remaining = Math.max(
+        0,
+        Math.ceil((endTimeRef.current - Date.now()) / 1000)
+      );
+      pausedTimeRef.current = remaining;
+      setTimeLeft(remaining);
+    } else {
+      pausedTimeRef.current = timeLeft;
+    }
+    endTimeRef.current = null;
   }, [timeLeft]);
 
   const stopTimer = useCallback(() => {
@@ -31,6 +42,7 @@ export const useTimer = (focusDuration: number, breakDuration: number) => {
     pausedTimeRef.current = null;
     setTimeLeft(isBreak ? breakDuration : focusDuration);
     setSessionDuration(isBreak ? breakDuration : focusDuration);
+    endTimeRef.current = null;
   }, [isBreak, focusDuration, breakDuration]);
 
   const switchToBreak = useCallback(() => {
@@ -39,6 +51,7 @@ export const useTimer = (focusDuration: number, breakDuration: number) => {
     setTimeLeft(breakDuration);
     setSessionDuration(breakDuration);
     setIsRunning(false);
+    endTimeRef.current = null;
   }, [breakDuration]);
 
   const switchToFocus = useCallback(() => {
@@ -47,38 +60,40 @@ export const useTimer = (focusDuration: number, breakDuration: number) => {
     setTimeLeft(focusDuration);
     setSessionDuration(focusDuration);
     setIsRunning(false);
+    endTimeRef.current = null;
   }, [focusDuration]);
 
   useEffect(() => {
-    if (isRunning && timeLeft > 0) {
-      intervalRef.current = window.setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            setIsRunning(false);
-            
-            // Vibrate if supported
-            if ('vibrate' in navigator) {
-              navigator.vibrate([200, 100, 200]);
-            }
-            
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
+    if (!isRunning) {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
       }
+      return;
     }
 
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
+    const tick = () => {
+      if (!endTimeRef.current) return;
+      const diff = Math.max(0, Math.ceil((endTimeRef.current - Date.now()) / 1000));
+      setTimeLeft(diff);
+      if (diff <= 0) {
+        setIsRunning(false);
+        if ('vibrate' in navigator) {
+          navigator.vibrate([200, 100, 200]);
+        }
+      } else {
+        timerRef.current = window.setTimeout(tick, 500);
       }
     };
-  }, [isRunning, timeLeft]);
+
+    timerRef.current = window.setTimeout(tick, 0);
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [isRunning]);
 
   // Update timer when focus/break duration changes (only if not running AND not paused)
   useEffect(() => {
