@@ -16,4 +16,12 @@ export function notify(message: string) {
   if ('vibrate' in navigator) {
     navigator.vibrate([200]);
   }
+  
+  if (Notification.permission === 'granted') {
+    try {
+      new Notification(message);
+    } catch {
+      // ignore errors
+    }
+  }
 }
