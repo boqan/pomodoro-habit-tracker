@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { notify } from '@/lib/notify';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -254,6 +255,17 @@ export const DualTimer: React.FC<DualTimerProps> = ({ onStateChange, shieldEnabl
       if (schedule[next].type === 'focus' && mode === 'pomodoro') {
         playFocusStart();
       }
+      if (
+        current.type === 'focus' &&
+        (schedule[next].type === 'break' || schedule[next].type === 'longBreak')
+      ) {
+        notify('Focus block ended – break starting.');
+      } else if (
+        current.type !== 'focus' &&
+        schedule[next].type === 'focus'
+      ) {
+        notify('Focus block started – break over.');
+      }
     } else {
       if (schedule[index].type === 'focus') {
         playFocusEnd();
@@ -285,6 +297,9 @@ export const DualTimer: React.FC<DualTimerProps> = ({ onStateChange, shieldEnabl
 
   const start = () => {
     if (!schedule.length) return;
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      Notification.requestPermission().catch(() => null);
+    }
     setIndex(0);
     setSecondsLeft(schedule[0].duration * 60);
     endRef.current = Date.now() + schedule[0].duration * 60 * 1000;
