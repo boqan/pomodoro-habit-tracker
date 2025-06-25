@@ -20,6 +20,7 @@ import { XPTooltip } from './XPTooltip';
 import { DistractionLog } from './DistractionLog';
 import { Footer } from './Footer';
 import { DualTimer } from './DualTimer';
+import { notify } from '@/lib/notify';
 
 const SmartPomodoro = () => {
   const [focusLength, setFocusLength] = useState(25);
@@ -211,10 +212,12 @@ const SmartPomodoro = () => {
     if (isBreak) {
       if (currentCycle >= cycles) return sessionComplete();
       switchToFocus();
+      notify('Focus block started – break over');
     } else {
       if (currentCycle >= cycles) return sessionComplete();
       setCurrentCycle((c) => c + 1);
       switchToBreak();
+      notify('Focus block ended – break starting');
     }
 
     startTimer();
