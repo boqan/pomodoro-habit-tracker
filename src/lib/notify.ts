@@ -1,27 +1,30 @@
-export function notify(message: string) {
-  if (typeof window === 'undefined') return;
+import { toast } from "@/components/ui/sonner"
 
-  if ('Notification' in window) {
-    if (Notification.permission === 'granted') {
-      new Notification(message);
-    } else if (Notification.permission !== 'denied') {
-      Notification.requestPermission().then((permission) => {
-        if (permission === 'granted') {
-          new Notification(message);
-        }
-      });
+/**
+ * Trigger a browser notification, optional vibration, and toast.
+ * Call this when a timer segment ends.
+ */
+export async function notify(message: string) {
+  if (typeof window !== "undefined" && "Notification" in window) {
+    if (Notification.permission === "default") {
+      try {
+        await Notification.requestPermission()
+      } catch {
+        /* ignore */
+      }
+    }
+    if (Notification.permission === "granted") {
+      try {
+        new Notification(message)
+      } catch {
+        /* ignore */
+      }
     }
   }
 
-  if ('vibrate' in navigator) {
-    navigator.vibrate([200]);
+  if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+    navigator.vibrate([200])
   }
-  
-  if (Notification.permission === 'granted') {
-    try {
-      new Notification(message);
-    } catch {
-      // ignore errors
-    }
-  }
+
+  toast(message)
 }
