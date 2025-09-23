@@ -429,6 +429,62 @@ export const DualTimer: React.FC<DualTimerProps> = ({ onStateChange, shieldEnabl
     cleanupMiniView();
   }, [cleanupMiniView, sendControl]);
 
+  const handleSegmentEnd = useCallback(() => {
+    if (index + 1 < schedule.length) {
+      const next = index + 1;
+      const current = schedule[index];
+      if (current.type === 'focus') {
+        playFocusEnd();
+      }
+      setIndex(next);
+      setSecondsLeft(schedule[next].duration * 60);
+      endRef.current = Date.now() + schedule[next].duration * 60 * 1000;
+      if (schedule[next].type === 'focus' && mode === 'pomodoro') {
+        playFocusStart();
+      }
+      if (
+        current.type === 'focus' &&
+        (schedule[next].type === 'break' || schedule[next].type === 'longBreak')
+      ) {
+        notify('Focus block ended – break starting.');
+      } else if (
+        current.type !== 'focus' &&
+        schedule[next].type === 'focus'
+      ) {
+        notify('Focus block started – break over.');
+      }
+    } else {
+      if (schedule[index].type === 'focus') {
+        playFocusEnd();
+      }
+      setRunning(false);
+    }
+  }, [index, schedule, mode, playFocusEnd, playFocusStart]);
+
+  const scheduleTick = useCallback(() => {
+    if (timerId.current) {
+      clearTimeout(timerId.current);
+      timerId.current = null;
+    }
+
+    const tick = () => {
+      if (!endRef.current) {
+        return;
+      }
+
+      const diff = Math.max(0, Math.ceil((endRef.current - Date.now()) / 1000));
+      setSecondsLeft(diff);
+
+      if (diff <= 0) {
+        handleSegmentEnd();
+      } else {
+        timerId.current = window.setTimeout(tick, 500);
+      }
+    };
+
+    timerId.current = window.setTimeout(tick, 0);
+  }, [handleSegmentEnd]);
+
   const handleRegularStartRequest = useCallback(
     (payload: unknown) => {
       let requestedMinutes: number | null = null;
@@ -477,14 +533,9 @@ export const DualTimer: React.FC<DualTimerProps> = ({ onStateChange, shieldEnabl
         setIndex(0);
         setSecondsLeft(totalSeconds);
         endRef.current = Date.now() + totalSeconds * 1000;
-
-        if (timerId.current) {
-          clearTimeout(timerId.current);
-          timerId.current = null;
-        }
-
         getAudioCtx().resume();
         setRunning(true);
+        scheduleTick();
 
         sendControl('regular-start-success', { minutes: sanitizedMinutes });
       } catch (error) {
@@ -504,6 +555,7 @@ export const DualTimer: React.FC<DualTimerProps> = ({ onStateChange, shieldEnabl
       setIndex,
       setSecondsLeft,
       setRunning,
+      scheduleTick,
     ]
   );
 
@@ -526,58 +578,20 @@ export const DualTimer: React.FC<DualTimerProps> = ({ onStateChange, shieldEnabl
     };
   }, [cleanupMiniView, sendControl]);
 
-  const handleSegmentEnd = React.useCallback(() => {
-    if (index + 1 < schedule.length) {
-      const next = index + 1;
-      const current = schedule[index];
-      if (current.type === 'focus') {
-        playFocusEnd();
-      }
-      setIndex(next);
-      setSecondsLeft(schedule[next].duration * 60);
-      endRef.current = Date.now() + schedule[next].duration * 60 * 1000;
-      if (schedule[next].type === 'focus' && mode === 'pomodoro') {
-        playFocusStart();
-      }
-      if (
-        current.type === 'focus' &&
-        (schedule[next].type === 'break' || schedule[next].type === 'longBreak')
-      ) {
-        notify('Focus block ended – break starting.');
-      } else if (
-        current.type !== 'focus' &&
-        schedule[next].type === 'focus'
-      ) {
-        notify('Focus block started – break over.');
-      }
-    } else {
-      if (schedule[index].type === 'focus') {
-        playFocusEnd();
-      }
-      setRunning(false);
-    }
-  }, [index, schedule, mode, playFocusEnd, playFocusStart]);
-      
   useEffect(() => {
-    if (!running) return;
-    const tick = () => {
-      if (!endRef.current) return;
-      const diff = Math.max(0, Math.ceil((endRef.current - Date.now()) / 1000));
-      setSecondsLeft(diff);
-      if (diff <= 0) {
-        handleSegmentEnd();
-      } else {
-        timerId.current = window.setTimeout(tick, 500);
-      }
-    };
-    timerId.current = window.setTimeout(tick, 0);
+    if (!running) {
+      return;
+    }
+
+    scheduleTick();
+
     return () => {
       if (timerId.current) {
         clearTimeout(timerId.current);
         timerId.current = null;
       }
     };
-  }, [running, handleSegmentEnd]);
+  }, [running, scheduleTick]);
 
   const start = () => {
     if (!schedule.length) return;
