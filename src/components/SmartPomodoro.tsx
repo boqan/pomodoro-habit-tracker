@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,7 @@ import { DistractionLog } from './DistractionLog';
 import { Footer } from './Footer';
 import { DualTimer } from './DualTimer';
 import { notify } from '@/lib/notify';
+import { initialTimerSnapshot, type TimerSnapshot } from '@/types/timer';
 
 const SmartPomodoro = () => {
   const [focusLength, setFocusLength] = useState(25);
@@ -37,9 +38,10 @@ const SmartPomodoro = () => {
   const [showConfetti, setShowConfetti] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
   const [sessionStarted, setSessionStarted] = useState(false);
-  const [dualRunning, setDualRunning] = useState(false);
-  const [dualIsBreak, setDualIsBreak] = useState(false);
-  const [dualSeconds, setDualSeconds] = useState(0);
+  const [dualSnapshot, setDualSnapshot] = useState<TimerSnapshot>(initialTimerSnapshot);
+  const dualRunning = dualSnapshot.running;
+  const dualIsBreak = dualSnapshot.segmentType === 'break' || dualSnapshot.segmentType === 'longBreak';
+  const dualSeconds = dualSnapshot.timeLeft;
 
   const { 
     timeLeft, 
@@ -93,25 +95,28 @@ const SmartPomodoro = () => {
     }
   }, [shieldEnabled, dualRunning]);
 
-  const handleShieldToggle = (enabled: boolean) => {
-    if (enabled) {
-      const elem = document.documentElement;
-      if (elem.requestFullscreen) {
-        elem
-          .requestFullscreen()
-          .then(() => setEnteredFullscreen(true))
-          .catch(() => setEnteredFullscreen(false));
+  const handleShieldToggle = useCallback(
+    (enabled: boolean) => {
+      if (enabled) {
+        const elem = document.documentElement;
+        if (elem.requestFullscreen) {
+          elem
+            .requestFullscreen()
+            .then(() => setEnteredFullscreen(true))
+            .catch(() => setEnteredFullscreen(false));
+        }
+        setShieldEnabled(true);
+      } else {
+        setShieldEnabled(false);
+        setShowShield(false);
+        if (enteredFullscreen && document.fullscreenElement) {
+          document.exitFullscreen().catch(() => null);
+        }
+        setEnteredFullscreen(false);
       }
-      setShieldEnabled(true);
-    } else {
-      setShieldEnabled(false);
-      setShowShield(false);
-      if (enteredFullscreen && document.fullscreenElement) {
-        document.exitFullscreen().catch(() => null);
-      }
-      setEnteredFullscreen(false);
-    }
-  };
+    },
+    [enteredFullscreen]
+  );
 
   useEffect(() => {
     if (!showShield && enteredFullscreen && document.fullscreenElement) {
@@ -176,7 +181,7 @@ const SmartPomodoro = () => {
     setCurrentCycle(1);
   };
 
-  const handleSessionComplete = () => {
+  const handleSessionComplete = useCallback(() => {
     setShowShield(false);
     setShowSessionComplete(true);
     setSessionStarted(false);
@@ -197,7 +202,7 @@ const SmartPomodoro = () => {
         setTimeout(() => setShowConfetti(false), 7000); // 7 seconds instead of 3
       }
     }
-  };
+  }, [shieldEnabled, handleShieldToggle, focusLength, meta.xp, addXP]);
 
   useEffect(() => {
     if (isRunning || timeLeft !== 0) return;
@@ -221,7 +226,18 @@ const SmartPomodoro = () => {
     }
 
     startTimer();
-  }, [isRunning, timeLeft, isBreak, mode, cycles, currentCycle]);
+  }, [
+    isRunning,
+    timeLeft,
+    isBreak,
+    mode,
+    cycles,
+    currentCycle,
+    handleSessionComplete,
+    switchToFocus,
+    switchToBreak,
+    startTimer
+  ]);
 
   // Validation functions for timer inputs
   const handleFocusLengthChange = (value: number) => {
@@ -304,11 +320,7 @@ const SmartPomodoro = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
           {/* Timer Card */}
           <DualTimer
-            onStateChange={(r, b, t) => {
-              setDualRunning(r);
-              setDualIsBreak(b);
-              setDualSeconds(t);
-            }}
+            onStateChange={setDualSnapshot}
             shieldEnabled={shieldEnabled}
             onShieldToggle={handleShieldToggle}
           />
