@@ -2,6 +2,8 @@ export type TimerMode = 'regular' | 'pomodoro'
 export type TimerSegmentType = 'focus' | 'break' | 'longBreak'
 export type TimerSegmentState = TimerSegmentType | 'idle'
 
+export const MAX_REGULAR_MINUTES = 600
+
 export interface TimerSnapshot {
   mode: TimerMode
   running: boolean

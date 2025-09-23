@@ -6,6 +6,9 @@ export type MiniTimerControlAction =
   | 'mini-closed'
   | 'main-closed'
   | 'publisher-reset'
+  | 'regular-start-request'
+  | 'regular-start-success'
+  | 'regular-start-error'
 
 export type MiniTimerMessage =
   | { type: 'snapshot'; snapshot: TimerSnapshot }

@@ -19,7 +19,7 @@ import {
 import { TimerDisplay } from './TimerDisplay';
 import { MiniTimerDisplayWithProvider } from './MiniTimerDisplay';
 import { useMiniTimerPublisher } from '@/hooks/useMiniTimerChannel';
-import { type TimerSnapshot } from '@/types/timer';
+import { type TimerSnapshot, MAX_REGULAR_MINUTES } from '@/types/timer';
 
 interface Segment {
   type: 'focus' | 'break' | 'longBreak';
@@ -429,13 +429,95 @@ export const DualTimer: React.FC<DualTimerProps> = ({ onStateChange, shieldEnabl
     cleanupMiniView();
   }, [cleanupMiniView, sendControl]);
 
+  const handleRegularStartRequest = useCallback(
+    (payload: unknown) => {
+      let requestedMinutes: number | null = null;
+      if (typeof payload === 'number' && Number.isFinite(payload)) {
+        requestedMinutes = payload;
+      } else if (payload && typeof payload === 'object') {
+        const raw = (payload as { minutes?: unknown }).minutes;
+        if (typeof raw === 'number' && Number.isFinite(raw)) {
+          requestedMinutes = raw;
+        } else if (typeof raw === 'string') {
+          const parsed = Number(raw);
+          if (Number.isFinite(parsed)) {
+            requestedMinutes = parsed;
+          }
+        }
+      }
+
+      if (requestedMinutes === null) {
+        sendControl('regular-start-error', {
+          message: 'Enter a valid number of minutes to start the simple timer.',
+        });
+        return;
+      }
+
+      const sanitizedMinutes =
+        Math.round(Math.min(Math.max(requestedMinutes, 1), MAX_REGULAR_MINUTES) * 100) / 100;
+
+      if (!Number.isFinite(sanitizedMinutes) || sanitizedMinutes <= 0) {
+        sendControl('regular-start-error', {
+          message: 'Use at least one minute for the simple timer.',
+        });
+        return;
+      }
+
+      try {
+        if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+          Notification.requestPermission().catch(() => null);
+        }
+
+        const totalSeconds = sanitizedMinutes * 60;
+
+        setMode('regular');
+        setShowSettings(false);
+        setRegularMinutes(sanitizedMinutes);
+        setPaused(false);
+        setIndex(0);
+        setSecondsLeft(totalSeconds);
+        endRef.current = Date.now() + totalSeconds * 1000;
+
+        if (timerId.current) {
+          clearTimeout(timerId.current);
+          timerId.current = null;
+        }
+
+        getAudioCtx().resume();
+        setRunning(true);
+
+        sendControl('regular-start-success', { minutes: sanitizedMinutes });
+      } catch (error) {
+        console.error('[DualTimer] Unable to start regular timer from mini view', error);
+        sendControl('regular-start-error', {
+          message: 'Unable to start the timer automatically. Try again from the main tab.',
+        });
+      }
+    },
+    [
+      getAudioCtx,
+      sendControl,
+      setMode,
+      setShowSettings,
+      setRegularMinutes,
+      setPaused,
+      setIndex,
+      setSecondsLeft,
+      setRunning,
+    ]
+  );
+
   useEffect(() => {
     return addListener(message => {
-      if (message.type === 'control' && message.action === 'mini-closed') {
+      if (message.type !== 'control') return;
+
+      if (message.action === 'mini-closed') {
         cleanupMiniView();
+      } else if (message.action === 'regular-start-request') {
+        handleRegularStartRequest(message.payload);
       }
     });
-  }, [addListener, cleanupMiniView]);
+  }, [addListener, cleanupMiniView, handleRegularStartRequest]);
 
   useEffect(() => {
     return () => {
