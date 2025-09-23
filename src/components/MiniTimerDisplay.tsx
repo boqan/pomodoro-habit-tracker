@@ -33,6 +33,10 @@ export const MiniTimerDisplay: React.FC<MiniTimerDisplayProps> = ({ onRequestClo
   const [minutesInput, setMinutesInput] = useState('25')
   const [startBusy, setStartBusy] = useState(false)
   const [startStatus, setStartStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+  const homeHref = useMemo(() => {
+    const base = import.meta.env.BASE_URL ?? '/'
+    return base.endsWith('/') ? base : `${base}/`
+  }, [])
 
   const handleControl = useCallback(
     (action: MiniTimerControlAction, payload?: unknown) => {
@@ -45,9 +49,6 @@ export const MiniTimerDisplay: React.FC<MiniTimerDisplayProps> = ({ onRequestClo
         sendControlRef.current?.('mini-closed')
       } else if (action === 'main-closed') {
         setPublisherMissing(true)
-        setStartBusy(false)
-      } else if (action === 'publisher-reset') {
-        setPublisherMissing(false)
         setStartBusy(false)
       } else if (action === 'regular-start-request') {
         // Ignore requests echoed back to this window.
@@ -254,7 +255,7 @@ export const MiniTimerDisplay: React.FC<MiniTimerDisplayProps> = ({ onRequestClo
       )}
       <div className="flex w-full flex-wrap items-center justify-center gap-2 text-xs">
         <Button variant="ghost" size="sm" asChild>
-          <a href="/" target="_blank" rel="noreferrer">
+          <a href={homeHref} target="_blank" rel="noreferrer">
             Open main timer
           </a>
         </Button>

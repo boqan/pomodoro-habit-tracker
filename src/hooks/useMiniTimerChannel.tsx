@@ -5,7 +5,6 @@ export type MiniTimerControlAction =
   | 'request-close'
   | 'mini-closed'
   | 'main-closed'
-  | 'publisher-reset'
   | 'regular-start-request'
   | 'regular-start-success'
   | 'regular-start-error'
@@ -93,7 +92,35 @@ export const MiniTimerChannelProvider: React.FC<React.PropsWithChildren> = ({ ch
   const postFallbackMessage = useCallback(
     (message: MiniTimerMessage) => {
       const payload = { key: FALLBACK_EVENT_KEY, message }
-      const targets = Array.from(fallbackTargetsRef.current)
+      const staticTargets = Array.from(fallbackTargetsRef.current)
+      const dynamicTargets: Window[] = []
+
+      if (typeof window !== 'undefined') {
+        const seen = new Set<Window>()
+        const addTarget = (candidate: Window | null | undefined) => {
+          if (!candidate || candidate === window) return
+          if (candidate.closed) return
+          if (seen.has(candidate)) return
+          seen.add(candidate)
+          dynamicTargets.push(candidate)
+        }
+
+        try {
+          addTarget(window.opener)
+        } catch (error) {
+          console.debug('[MiniTimerChannel] unable to access opener', error)
+        }
+
+        try {
+          const parentWindow = window.parent
+          addTarget(parentWindow && parentWindow !== window ? parentWindow : null)
+        } catch (error) {
+          console.debug('[MiniTimerChannel] unable to access parent window', error)
+        }
+      }
+
+      const targets = [...staticTargets, ...dynamicTargets]
+
       targets.forEach(target => {
         if (!target || target.closed) {
           fallbackTargetsRef.current.delete(target)
