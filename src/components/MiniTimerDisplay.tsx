@@ -123,7 +123,8 @@ export const MiniTimerDisplay: React.FC<MiniTimerDisplayProps> = ({ onRequestClo
     snapshot.totalFocusSegments
   ])
 
-  const stale = snapshot.updatedAt === 0 || now - lastUpdated > 4000
+  const expectingLiveUpdates = snapshot.running || snapshot.paused
+  const stale = connected && expectingLiveUpdates && now - lastUpdated > 4000
   const statusMessage = useMemo(() => {
     if (publisherMissing) {
       return 'Main timer not detected. Reopen the dashboard to continue.'
